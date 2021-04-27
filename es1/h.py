@@ -60,18 +60,18 @@ def my_hierarchical(G, num_clusters=4):
             w_neighbors = clusters[w]
             w_neighbor = random.choice(w_neighbors)
             #Vedo il neighbor in che cluster si trova
-            frozen_set_k_cluster = cluster_belongs[w_neighbor]
-            #get neighbors of frozen_set_k
-            k_neighbors = clusters[frozen_set_k_cluster]
+            neighbor_cluster = cluster_belongs[w_neighbor]
+            #get neighbors of neighbor
+            k_neighbors = clusters[neighbor_cluster]
 
             #delete w from clusters
             del clusters[w]
-            #if frozen_set_k_cluster in clusters:
-            del clusters[frozen_set_k_cluster]
+            #if neighbor_cluster in clusters:
+            del clusters[neighbor_cluster]
 
             #create new frozenset with w
-            new_frozen_set = frozen_set_k_cluster | w
-            visited.append(frozen_set_k_cluster)
+            new_frozen_set = neighbor_cluster | w
+            visited.append(neighbor_cluster)
             #update with new frozenset and with neighbors
             #from w_neighbors delete elements in k neighbors
             #w_neighbors = [k for k in w_neighbors if k not in k_neighbors]
@@ -85,7 +85,7 @@ def my_hierarchical(G, num_clusters=4):
             for n in w: #per ogni elemento nel frozenset w
                 cluster_belongs[n] = new_frozen_set
 
-            for k in frozen_set_k_cluster:
+            for k in neighbor_cluster:
                 cluster_belongs[k] = new_frozen_set
             
             if len(clusters)==num_clusters:
@@ -131,6 +131,7 @@ def hierarchical_for_dataset(G):
         a = input("Do you want to continue? (y/n) ")
         if a == "n":
             done = True 
+            
 def two_means(G,K=4):
     n=G.number_of_nodes()
     # Choose two clusters represented by vertices that are not neighbors
@@ -208,4 +209,4 @@ if __name__ == '__main__':
     G.add_edge('F', 's')
     print("CLUSTERING")
     print("Hierarchical")
-    print(two_means(G,4))
+    print(two_means(G))
