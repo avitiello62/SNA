@@ -155,6 +155,7 @@ def spectral(G):
             c2.add(nodes[i])
     print(c1,c2)
     
+    
 #How to achieve more than two clusters? Two options:
 #(i) for each subgraph corresponding to one of the clusters, we can split this subgraph by running the spectral algorithm on it;
 #(ii) we can use further eigenvectors. For example, we can partition nodes in four clusters by using the first two eigenvectors,
