@@ -9,6 +9,7 @@ from scipy.sparse import linalg
 import matplotlib.pyplot as plt
 import itertools as it
 from joblib import Parallel, delayed
+import time
 
 def load_dataset(csv_file):
 
@@ -94,7 +95,43 @@ def my_hierarchical(G, num_clusters=4):
             i+=1
 
     return [ set(k) for k in clusters]
-           
+
+def hierarchical(G):
+    # Create a priority queue with each pair of nodes indexed by distance
+    pq = PriorityQueue()
+    for u in G.nodes():
+        for v in G.nodes():
+            if u != v:
+                if (u, v) in G.edges() or (v, u) in G.edges():
+                    pq.add(frozenset([frozenset(u), frozenset(v)]), 0)
+                else:
+                    pq.add(frozenset([frozenset(u), frozenset(v)]), 1)
+
+    # Start with a cluster for each node
+    clusters = set(frozenset(u) for u in G.nodes())
+
+    done = False
+    while not done:
+        # Merge closest clusters
+        s = list(pq.pop())
+        clusters.remove(s[0])
+        clusters.remove(s[1])
+
+        # Update the distance of other clusters from the merged cluster
+        for w in clusters:
+            e1 = pq.remove(frozenset([s[0], w]))
+            e2 = pq.remove(frozenset([s[1], w]))
+            if e1 == 0 or e2 == 0:
+                pq.add(frozenset([s[0] | s[1], w]), 0)
+            else:
+                pq.add(frozenset([s[0] | s[1], w]), 1)
+
+        clusters.add(s[0] | s[1])
+
+        
+        if len(clusters)==4:
+            return list(clusters)
+   
 def four_means(G,K=4):
     n=G.number_of_nodes()
     u = random.choice(list(G.nodes()))
@@ -139,6 +176,7 @@ def four_means(G,K=4):
     return [cluster0 ,cluster1 ,cluster2 ,cluster3]
 
 def spectral(G):
+    start=time.time()
     n=G.number_of_nodes()
     nodes=sorted(G.nodes())
     L = nx.laplacian_matrix(G, nodes).asfptype() 
@@ -179,6 +217,8 @@ def spectral(G):
         else:
             c22.add(nodes2[i])
     #print(c21,c22)
+    end=time.time()
+    print("tempo esec:",end-start)
     return [c11, c12, c21, c22]
 
 
@@ -191,6 +231,7 @@ def double_chunks(data1,data2,size):
 
 
 def parallel_eigen(G,j):
+    start=time.time()
     n=G.number_of_nodes()
     nodes=sorted(G.nodes())
     L = nx.laplacian_matrix(G, nodes).asfptype() 
@@ -248,6 +289,9 @@ def parallel_eigen(G,j):
     for res in result:
         c21|=res[0]
         c22|=res[1]
+    
+    end=time.time()
+    print("tempo esec:",end-start)
     return [c11,c12,c21,c22]
 
 
@@ -352,14 +396,14 @@ if __name__ == '__main__':
     print("Our Hierarchical")
     for i,cluster in enumerate(my_hierarchical(G)):
         print("Cluster {} : {}".format(i,cluster) )
+    print("Hierarchical")
+    for i,cluster in enumerate(hierarchical(G)):
+        print("Cluster {} : {}".format(i,cluster) )
     
     print("4 Means")
     for i,cluster in enumerate(four_means(G)):
         print("Cluster {} : {}".format(i,cluster) )
     
-    print("Spectral")
-    for i,cluster in enumerate(spectral(G)): 
-        print("Cluster {} : {}".format(i,cluster) )
     print("Beetweenness Clustering")
     for i,cluster in enumerate(bwt_cluster(G)):  
         print("Cluster {} : {}".format(i,cluster) )
@@ -367,7 +411,7 @@ if __name__ == '__main__':
     for i,cluster in enumerate(spectral(G)):  
         print("Cluster {} : {}".format(i,cluster) )
     print('Spectral Parallel')
-    for i,cluster in enumerate(parallel_eigen(G,4)):  
+    for i,cluster in enumerate(parallel_eigen(G,1)):  
         print("Cluster {} : {}".format(i,cluster) )
     
     
