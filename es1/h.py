@@ -133,6 +133,7 @@ def hierarchical(G):
             return list(clusters)
    
 def four_means(G,K=4):
+    start=time.time()
     n=G.number_of_nodes()
     u = random.choice(list(G.nodes()))
     seed=[u]
@@ -140,6 +141,7 @@ def four_means(G,K=4):
     
     for i in range (K-1):
         for s in seed:
+            
             if not_neighbors_set==set():
                 not_neighbors_set=set(nx.non_neighbors(G, s))
             else:                
@@ -155,7 +157,7 @@ def four_means(G,K=4):
     cluster1={seed[1]}
     cluster2={seed[2]}
     cluster3={seed[3]}
-    
+    print("Seed Chosen")
     added=4
     while added < n:
         # Choose a node that is not yet in a cluster and add it to the closest cluster
@@ -173,6 +175,9 @@ def four_means(G,K=4):
         elif len(set(G.neighbors(x)).intersection(cluster3)) != 0:
             cluster3.add(x)
             added+=1
+        
+    end=time.time()
+    print("tempo esec:",end-start)
     return [cluster0 ,cluster1 ,cluster2 ,cluster3]
 
 def spectral(G):
@@ -365,9 +370,8 @@ def bwt_cluster(G):
     return cc
         
 
-if __name__ == '__main__':
-     
-    
+if __name__ == '__main__':  
+    '''
     G = nx.Graph()
     G.add_edge('A', 'B')
     G.add_edge('A', 'v')
@@ -389,8 +393,6 @@ if __name__ == '__main__':
     G.add_edge('2', '3')
     G.add_edge('3', '1')
 
-
-
     print("CLUSTERING")
     
     print("Our Hierarchical")
@@ -399,9 +401,15 @@ if __name__ == '__main__':
     print("Hierarchical")
     for i,cluster in enumerate(hierarchical(G)):
         print("Cluster {} : {}".format(i,cluster) )
-    
+    '''
+    G=load_dataset("facebook_large/musae_facebook_edges.csv")
     print("4 Means")
     for i,cluster in enumerate(four_means(G)):
+        print("Cluster {} : {}".format(i,cluster) )
+    
+    '''
+    print('Spectral Parallel')
+    for i,cluster in enumerate(parallel_eigen(G,8)):  
         print("Cluster {} : {}".format(i,cluster) )
     
     print("Beetweenness Clustering")
@@ -410,11 +418,6 @@ if __name__ == '__main__':
     print('Spectral')
     for i,cluster in enumerate(spectral(G)):  
         print("Cluster {} : {}".format(i,cluster) )
-    print('Spectral Parallel')
-    for i,cluster in enumerate(parallel_eigen(G,1)):  
-        print("Cluster {} : {}".format(i,cluster) )
-    
-    
     nx.draw(G,with_labels=True)
     plt.show()
-    
+    '''
