@@ -503,12 +503,13 @@ if __name__ == '__main__':
     print("4 Means Modified")
     for i,cluster in enumerate(four_means_v2(G)):
         print("Cluster {} : {}".format(i,cluster) )
-    print("4 Means")
-    for i,cluster in enumerate(four_means(G)):
-        print("Cluster {} : {}".format(i,cluster) )
+    
     
     
     '''
+    print("4 Means")
+    for i,cluster in enumerate(four_means(G)):
+        print("Cluster {} : {}".format(i,cluster) )
     print('Spectral Parallel')
     for i,cluster in enumerate(parallel_eigen(G,8)):  
         print("Cluster {} : {}".format(i,cluster) )
