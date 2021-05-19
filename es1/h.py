@@ -332,7 +332,7 @@ def double_chunks(data1,data2,size):
 
 
 
-def parallel_eigen(G,j):
+def spectral_parallel(G,j):
     start=time.time()
     n=G.number_of_nodes()
     nodes=sorted(G.nodes())
@@ -400,7 +400,7 @@ def parallel_eigen(G,j):
 def compute_eigen(vec,nodes):
     c1=set()
     c2=set()
-    for i in range(len(nodes)):
+    for i in tqdm(range(len(nodes))):
         if vec[i,0] < 0:
             c1.add(nodes[i])
         else:
@@ -412,23 +412,23 @@ def betweenness(G):
     edge_btw={frozenset(e):0 for e in G.edges()}
     node_btw={i:0 for i in G.nodes()}
 
-    for s in G.nodes():
+    for s in tqdm(G.nodes()):
         # Compute the number of shortest paths from s to every other node
         tree=[] #it lists the nodes in the order in which they are visited
         spnum={i:0 for i in G.nodes()} #it saves the number of shortest paths from s to i
         parents={i:[] for i in G.nodes()} #it saves the parents of i in each of the shortest paths from s to i
-        distance={i:-1 for i in G.nodes()} #the number of shortest paths starting from s that use the edge e
+        distance={i:-1 for i in G.nodes()} 
         eflow={frozenset(e):0 for e in G.edges()} #the number of shortest paths starting from s that use the edge e
         vflow={i:1 for i in G.nodes()} #the number of shortest paths starting from s that use the vertex i. It is initialized to 1 because the shortest path from s to i is assumed to uses that vertex once.
 
-        #BFS
-        queue=[s]
-        spnum[s]=1
-        distance[s]=0
-        while queue != []:
-            c=queue.pop(0)
-            tree.append(c)
-            for i in G[c]:
+        #BFS                    
+        queue=[s]                           
+        spnum[s]=1                               
+        distance[s]=0                       
+        while queue != []:          
+            c=queue.pop(0)                  
+            tree.append(c)                  
+            for i in G[c]:                  
                 if distance[i] == -1: #if vertex i has not been visited
                     queue.append(i)
                     distance[i]=distance[c]+1
@@ -438,8 +438,9 @@ def betweenness(G):
 
         # BOTTOM-UP PHASE
         while tree != []:
-            c=tree.pop()
-            for i in parents[c]:
+            c=tree.pop()            
+            
+            for i in parents[c]:    
                 eflow[frozenset({c,i})]+=vflow[c] * (spnum[i]/spnum[c]) #the number of shortest paths using vertex c is split among the edges towards its parents proportionally to the number of shortest paths that the parents contributes
                 vflow[i]+=eflow[frozenset({c,i})] #each shortest path that use an edge (i,c) where i is closest to s than c must use also vertex i
                 edge_btw[frozenset({c,i})]+=eflow[frozenset({c,i})] #betweenness of an edge is the sum over all s of the number of shortest paths from s to other nodes using that edge
@@ -453,6 +454,7 @@ def betweenness(G):
 
 #Clusters are computed by iteratively removing edges of largest betweenness
 def bwt_cluster(G):
+    start=time.time()
     eb,nb=betweenness(G)
     pq=PriorityQueue()
     for i in eb.keys():
@@ -464,12 +466,96 @@ def bwt_cluster(G):
         edge=tuple(sorted(pq.pop()))
         graph.remove_edges_from([edge])
         cc=list(nx.connected_components(graph))
+    end=time.time()
+    print("Time Exec:",end-start)
     return cc
         
 
+
+def chunks(data,size):
+    idata=iter(data)
+    for i in range(0, len(data), size):
+        yield {k:data[k] for k in it.islice(idata, size)}
+
+def betweenness_parallel(G,j=1):
+    edge_btw={frozenset(e):0 for e in G.edges()}
+    node_btw={i:0 for i in G.nodes()}
+    with Parallel(n_jobs=j) as parallel:
+        #Run in parallel diameter function on each processor by passing to each processor only the subset of nodes on which it works
+        result=parallel(delayed(compute_bwt)(G,X) for X in chunks(G.nodes(), math.ceil(len(G.nodes())/j)))
+    for key in edge_btw.keys():
+        for res in result:
+            edge_btw[key]+=res[0][key]
+
+    for key in node_btw.keys():
+        for res in result:
+            node_btw[key]+=res[1][key]
+    
+    return edge_btw,node_btw
+
+    
+def compute_bwt(G,nodes):
+    edge_btw={frozenset(e):0 for e in G.edges()}
+    node_btw={i:0 for i in G.nodes()}
+    for s in tqdm(nodes):
+        # Compute the number of shortest paths from s to every other node
+        tree=[] #it lists the nodes in the order in which they are visited
+        spnum={i:0 for i in G.nodes()} #it saves the number of shortest paths from s to i
+        parents={i:[] for i in G.nodes()} #it saves the parents of i in each of the shortest paths from s to i
+        distance={i:-1 for i in G.nodes()} 
+        eflow={frozenset(e):0 for e in G.edges()} #the number of shortest paths starting from s that use the edge e
+        vflow={i:1 for i in G.nodes()} #the number of shortest paths starting from s that use the vertex i. It is initialized to 1 because the shortest path from s to i is assumed to uses that vertex once.
+
+        #BFS                    
+        queue=[s]                           
+        spnum[s]=1                               
+        distance[s]=0                       
+        while queue != []:          
+            c=queue.pop(0)                  
+            tree.append(c)                  
+            for i in G[c]:                  
+                if distance[i] == -1: #if vertex i has not been visited
+                    queue.append(i)
+                    distance[i]=distance[c]+1
+                if distance[i] == distance[c]+1: #if we have just found another shortest path from s to i
+                    spnum[i]+=spnum[c]
+                    parents[i].append(c)
+
+        # BOTTOM-UP PHASE
+        while tree != []:
+            c=tree.pop()            
+            
+            for i in parents[c]:    
+                eflow[frozenset({c,i})]+=vflow[c] * (spnum[i]/spnum[c]) #the number of shortest paths using vertex c is split among the edges towards its parents proportionally to the number of shortest paths that the parents contributes
+                vflow[i]+=eflow[frozenset({c,i})] #each shortest path that use an edge (i,c) where i is closest to s than c must use also vertex i
+                edge_btw[frozenset({c,i})]+=eflow[frozenset({c,i})] #betweenness of an edge is the sum over all s of the number of shortest paths from s to other nodes using that edge
+            if c != s:
+                node_btw[c]+=vflow[c] #betweenness of a vertex is the sum over all s of the number of shortest paths from s to other nodes using that vertex
+    return edge_btw,node_btw
+
+def bwt_cluster_parallel(G,j=1):
+    start=time.time()
+    eb,nb=betweenness_parallel(G,j)
+    pq=PriorityQueue()
+    for i in eb.keys():
+        pq.add(i,-eb[i])
+    graph=G.copy()
+    #we can stop the algorithm when there are only 4 cluster (connected component in the graph)
+    cc=[]
+    while len(cc)!=4:
+        edge=tuple(sorted(pq.pop()))
+        graph.remove_edges_from([edge])
+        cc=list(nx.connected_components(graph))
+    end=time.time()
+    print("Time Exec:",end-start)
+    return cc
+
 if __name__ == '__main__':  
-    '''
+    
     G = nx.Graph()
+    G.add_edge('A', 'B')
+    G.add_edge('A', 'C')
+    
     G.add_edge('A', 'B')
     G.add_edge('A', 'v')
     G.add_edge('B', 'C')
@@ -477,6 +563,7 @@ if __name__ == '__main__':
     G.add_edge('B', 'D')
     G.add_edge('D', 'E')
     G.add_edge('D', 'z')
+    
     G.add_edge('E', 'F')
     G.add_edge('E', 's')
     G.add_edge('F', 'G')
@@ -489,6 +576,38 @@ if __name__ == '__main__':
     G.add_edge('1', '2')
     G.add_edge('2', '3')
     G.add_edge('3', '1')
+
+    
+    
+    #G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    print("4 Means Modified")
+    for i,cluster in enumerate(four_means_v2(G)):
+        print("Cluster {} : {}".format(i,cluster) )
+    print('Spectral Parallel')
+    for i,cluster in enumerate(spectral_parallel(G,8)):  
+        print("Cluster {} : {}".format(i,cluster) )
+    
+    print('Spectral')
+    for i,cluster in enumerate(spectral(G)):  
+        print("Cluster {} : {}".format(i,cluster) )
+    nx.draw(G,with_labels=True)
+    plt.show()
+    '''
+    
+    
+    
+    print("Beetweenness Clustering Parallel")
+    for i,cluster in enumerate(bwt_cluster_parallel(G,8)):  
+        print("Cluster {} : {}".format(i,cluster) )
+    print("Beetweenness Clustering")
+    for i,cluster in enumerate(bwt_cluster(G)):  
+        print("Cluster {} : {}".format(i,cluster) )
+    
+    
+    
+    
+    
+    
     
     print("CLUSTERING")
     
@@ -498,20 +617,16 @@ if __name__ == '__main__':
     print("Hierarchical")
     for i,cluster in enumerate(hierarchical(G)):
         print("Cluster {} : {}".format(i,cluster) )
-    '''
+    
     G=load_dataset("facebook_large/musae_facebook_edges.csv")
-    print("4 Means Modified")
-    for i,cluster in enumerate(four_means_v2(G)):
-        print("Cluster {} : {}".format(i,cluster) )
     
     
     
-    '''
-    print("4 Means")
-    for i,cluster in enumerate(four_means(G)):
-        print("Cluster {} : {}".format(i,cluster) )
+    
+    
+    
     print('Spectral Parallel')
-    for i,cluster in enumerate(parallel_eigen(G,8)):  
+    for i,cluster in enumerate(spectral_parallel(G,8)):  
         print("Cluster {} : {}".format(i,cluster) )
     
     print("Beetweenness Clustering")
@@ -520,7 +635,6 @@ if __name__ == '__main__':
     print('Spectral')
     for i,cluster in enumerate(spectral(G)):  
         print("Cluster {} : {}".format(i,cluster) )
-    nx.draw(G,with_labels=True)
-    plt.show()
+    
     '''
     
