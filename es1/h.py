@@ -1,6 +1,8 @@
 import networkx as nx
 import math
+from networkx.algorithms import cluster
 from networkx.generators.directed import random_uniform_k_out_graph
+from numpy.lib.type_check import real
 from tqdm import tqdm
 import pandas as pd
 from priorityq import PriorityQueue
@@ -27,6 +29,25 @@ def load_dataset(csv_file):
     print("# of self loops: ", nx.number_of_selfloops(G))
 
     return G
+
+
+def load_real_cluster(csv_file):
+    
+    df_edges = pd.read_csv(csv_file)
+    cluster={}
+    cluster["tvshow"]=set()
+    cluster["government"]=set()
+    cluster["politician"]=set()
+    cluster["company"]=set()
+    for row in tqdm(df_edges.iterrows()):
+
+        row = row[1]
+        
+        cluster[row["page_type"]].add(np.uint16(row["id"]))
+        
+    return cluster  
+    
+    
 
 
 def my_hierarchical(G, num_clusters=4):
@@ -247,12 +268,10 @@ def four_means_v2(G,K=4):
         cluster[seed[i]].add(seed[i])
         neighbors[seed[i]]=set(nx.neighbors(G,seed[i]))
         all_node.add(seed[i])
-    print(cluster)
-    print(neighbors)
-    print(all_node)
     
     
-    print("Seed Chosen")
+    
+    
     
     added=4
     while added < n:
@@ -400,7 +419,7 @@ def spectral_parallel(G,j):
 def compute_eigen(vec,nodes):
     c1=set()
     c2=set()
-    for i in tqdm(range(len(nodes))):
+    for i in range(len(nodes)):
         if vec[i,0] < 0:
             c1.add(nodes[i])
         else:
@@ -550,8 +569,27 @@ def bwt_cluster_parallel(G,j=1):
     print("Time Exec:",end-start)
     return cc
 
-if __name__ == '__main__':  
+
+
+
+if __name__ == '__main__':
     
+    
+    real_clusters=load_real_cluster("facebook_large/musae_facebook_target.csv")
+    G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    four_means_clusters=four_means_v2(G)
+    label=['first','second','third','fourth']
+    for key in real_clusters.keys():
+        cluster_len=len(real_clusters[key])
+        print("Cluster {} has {} elements:".format(key,cluster_len))
+        
+        for i in range(4):
+            intersection=len(real_clusters[key].intersection(four_means_clusters[i]))
+            perc=float(intersection/len(four_means_clusters[i]))
+            print("\t{} elements are in the {} cluster, the {:.2f} percentage".format(intersection,label[i],perc))
+        
+       
+    '''
     G = nx.Graph()
     G.add_edge('A', 'B')
     G.add_edge('A', 'C')
@@ -576,7 +614,7 @@ if __name__ == '__main__':
     G.add_edge('1', '2')
     G.add_edge('2', '3')
     G.add_edge('3', '1')
-
+    
     
     
     #G=load_dataset("facebook_large/musae_facebook_edges.csv")
@@ -592,7 +630,7 @@ if __name__ == '__main__':
         print("Cluster {} : {}".format(i,cluster) )
     nx.draw(G,with_labels=True)
     plt.show()
-    '''
+    
     
     
     
