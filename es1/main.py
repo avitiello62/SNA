@@ -94,42 +94,42 @@ if __name__ == '__main__':
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means_opt.pkl')
     '''
-    print("4 Means")#infinito 1 volta
+    print("4 Means")#infinito 1 volta                   Mario
     clusters=four_means_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means.pkl')
     
     
-    print('Spectral Parallel')#infinito dipende dal tempo /testare con sampling
+    print('Spectral Parallel')#infinito dipende dal tempo /testare con sampling    Arcangelo
     clusters=spectral_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral_parallel.pkl')
     
     
-    print('Spectral ')#infinito 1 volta
+    print('Spectral ')#infinito 1 volta            Luigi
     clusters=spectral_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral.pkl')
     
     
-    print('Hierarchical OPT ')#2/10 min /10 volte
+    print('Hierarchical OPT ')#2/10 min /10 volte    luigi
     clusters=hierarchical_clustering_opt(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'hierarchical_opt.pkl')
     
     
-    print('BTW Parallel ')#40min    5/10 volte
+    print('BTW Parallel ')#40min    5/10 volte     alberto
     clusters=btw_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'btw_parallel.pkl')
 
 
-    print('BTW  ')#3/4h             2/3 volte
+    print('BTW  ')#3/4h             2/3 volte    mario
     clusters=btw_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
