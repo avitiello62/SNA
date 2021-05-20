@@ -86,36 +86,49 @@ if __name__ == '__main__':
     
     
     #G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    
+    
     print("4 Means OPT")
     clusters=four_means_clustering_opt(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means_opt.pkl')
+    
     print("4 Means ")
     clusters=four_means_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means.pkl')
+    
+    
     print('Spectral Parallel')
     clusters=spectral_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral_parallel.pkl')
+    
+    
     print('Spectral ')
     clusters=spectral_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral.pkl')
+    
+    
     print('Hierarchical OPT ')
     clusters=hierarchical_clustering_opt(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'hierarchical_opt.pkl')
+    
+    
     print('BTW Parallel ')
     clusters=btw_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'btw_parallel.pkl')
+
+
     print('BTW  ')
     clusters=btw_clustering(G)
     for k in clusters:
