@@ -85,53 +85,53 @@ if __name__ == '__main__':
     
     
     
-    #G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    G=load_dataset("facebook_large/musae_facebook_edges.csv")
     
     
-    print("4 Means OPT")
+    print("4 Means OPT")#1.5s non si deve testare
     clusters=four_means_clustering_opt(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means_opt.pkl')
-    
-    print("4 Means ")
+    '''
+    print("4 Means")#infinito 1 volta
     clusters=four_means_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'four_means.pkl')
     
     
-    print('Spectral Parallel')
+    print('Spectral Parallel')#infinito dipende dal tempo /testare con sampling
     clusters=spectral_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral_parallel.pkl')
     
     
-    print('Spectral ')
+    print('Spectral ')#infinito 1 volta
     clusters=spectral_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral.pkl')
     
     
-    print('Hierarchical OPT ')
+    print('Hierarchical OPT ')#2/10 min /10 volte
     clusters=hierarchical_clustering_opt(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'hierarchical_opt.pkl')
     
     
-    print('BTW Parallel ')
+    print('BTW Parallel ')#40min    5/10 volte
     clusters=btw_clustering_parallel(G,4)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'btw_parallel.pkl')
 
 
-    print('BTW  ')
+    print('BTW  ')#3/4h             2/3 volte
     clusters=btw_clustering(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'btw.pkl')
-    
+    '''
