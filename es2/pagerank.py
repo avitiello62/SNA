@@ -1,13 +1,56 @@
+from pathlib import Path
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
 import copy
-def pagerank(G: nx.DiGraph):
-    print("gg")
+import time
 
 
-def directed_graph_generation(n:int, p:float):
+def pagerank(G: nx.DiGraph, tollerance):
+    n = len(G.nodes())
+    tollerance = n * tollerance
+    h = 0
+    edge_rank = {}
+    node_rank = {}
+
+    start_time = time.perf_counter()
+
+    for node in G.nodes:
+        node_rank[node] = 1 / n
+
+    while True:
+        node_rank_old = copy.deepcopy(node_rank)
+        edge_rank_old = copy.deepcopy(edge_rank)
+        for node in G.nodes:
+            neighbors = [k for k in G.neighbors(node)]
+            divisor = len(list(neighbors))
+            for neigh in neighbors:
+                edge_rank[frozenset([node, neigh])] = node_rank[node] / divisor
+
+        for node in G.nodes:
+            node_rank[node] = 0
+            neighbors = [k for k in G.neighbors(node)]
+            for neigh in neighbors:
+                node_rank[node] += edge_rank[frozenset([node, neigh])]
+
+        h += 1
+
+        err_node_rank = sum([abs(node_rank[n] - node_rank_old[n]) for n in node_rank])
+
+        if err_node_rank < tollerance:
+            print("ERRORE: ", err_node_rank)
+            print("TOLLERANZA DEL GRAFO: ", tollerance)
+            break
+
+    stop_time = time.perf_counter()
+
+    return stop_time - start_time, h, edge_rank, node_rank
+
+
+def directed_graph_generation(n: int, p: float):
     return nx.generators.random_graphs.fast_gnp_random_graph(n, p, directed=True)
+
 
 def plot_function(G):
     pos = nx.layout.spring_layout(G)
@@ -41,54 +84,33 @@ def plot_function(G):
     plt.show()
 
 
+def load_graph_2(csv_file):
+    base_path = Path(__file__).parent
+    file_path = (base_path / csv_file).resolve()
+    data = open(file_path, "r")
+    next(data, None)  # skip the first line in the input file
+    Graphtype = nx.Graph()
+
+    G = nx.parse_edgelist(data, delimiter=',', create_using=Graphtype,
+                          nodetype=int, data=(('weight', float),))
+
+    return G
+
+
 if __name__ == '__main__':
-    n = 1000
-    p = 0.1
+    n = 22470
+    p = 0.00068
     tollerance = 1e-6
-    G = directed_graph_generation(n, p)
-    print(len(G.edges), len(G.nodes))
 
-    edge_rank = {}
-    node_rank = {}
-    for node in G.nodes:
-        node_rank[node] = 1/n
-        #G.nodes[x]["weight"] = 1 / n
-        #print(G.nodes[x]["weight"])
+    G = load_graph_2(csv_file="../musae_facebook_edges.csv")
 
+    time, iterations, edge_rank, node_rank = pagerank(G, tollerance)
 
-
-    h = 0
-    b = {}
-    rank = 0
-
-    #nx.draw(G)
-    #plt.show()
-    while True:
-        node_rank_old = copy.deepcopy(node_rank)
-        edge_rank_old = copy.deepcopy(edge_rank)
-        for node in G.nodes:
-            neighbors = [k for k in G.neighbors(node)]
-            divisor = len(list(neighbors))
-            for neigh in neighbors:
-                edge_rank[frozenset([node, neigh])] = node_rank[node]/divisor
-
-        for node in G.nodes:
-            node_rank[node] = 0
-            neighbors = [k for k in G.neighbors(node)]
-            for neigh in neighbors:
-                node_rank[node] += edge_rank[frozenset([node, neigh])]
-
-        h += 1
-
-        err_node_rank = sum([abs(node_rank[n] - node_rank_old[n]) for n in node_rank])
-        if err_node_rank < n*tollerance:
-            break
-
-    print(len(node_rank), node_rank)
-    print(len(edge_rank), edge_rank)
-    print("CONVERGENZA = ", h)
-
-
+    print("NODI = ", len(node_rank))
+    print("ARCHI = ", len(edge_rank))
+    print("TOLLERANZA = ", tollerance)
+    print("ITERAZIONI PER LA CONVERGENZA = ", iterations)
+    print("TEMPO = ", time)
 
     '''pos = nx.spring_layout(G)
     labels = nx.get_edge_attributes(G, 'weight')
@@ -106,5 +128,3 @@ if __name__ == '__main__':
 
         if edge[0] > h:
             h += 1'''
-
-
