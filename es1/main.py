@@ -84,14 +84,14 @@ if __name__ == '__main__':
     
     
     
-    G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
     
-    print("4 Means OPT")#1.5s non si deve testare
+    '''print("4 Means OPT")#1.5s non si deve testare
     clusters=four_means_clustering_opt(G)
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'four_means_opt.pkl')
+    save_dict_on_file(clusters,'four_means_opt.pkl')'''
     '''
     print("4 Means")#infinito 1 volta                   Mario
     clusters=four_means_clustering(G)
@@ -112,15 +112,18 @@ if __name__ == '__main__':
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral.pkl')
-    
+    '''
     
     print('Hierarchical OPT ')#2/10 min /10 volte    luigi
+    start = time.time()
     clusters=hierarchical_clustering_opt(G,4)
+    end = time.time()
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'hierarchical_opt.pkl')
+    save_dict_on_file(clusters,'hierarchical_opt9.pkl')
+    print("FINAL TIME: ", end-start)
     
-    
+    '''
     print('BTW Parallel ')#40min    5/10 volte     alberto
     clusters=btw_clustering_parallel(G,4)
     for k in clusters:
