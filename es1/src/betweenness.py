@@ -1,6 +1,6 @@
 import networkx as nx
 import math
-from src.priorityq import PriorityQueue
+from .priorityq import PriorityQueue
 import itertools as it
 from joblib import Parallel, delayed
 import time
