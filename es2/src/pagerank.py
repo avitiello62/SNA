@@ -1,20 +1,18 @@
 from pathlib import Path
-
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import networkx as nx
 import copy
 import time
 
 
-def pagerank(G: nx.DiGraph, tollerance):
+def pagerank(G):
+    tollerance = 1e-6
     n = len(G.nodes())
     tollerance = n * tollerance
     h = 0
     edge_rank = {}
     node_rank = {}
 
-    start_time = time.perf_counter()
+    start_time = time.time()
 
     for node in G.nodes:
         node_rank[node] = 1 / n
@@ -39,52 +37,17 @@ def pagerank(G: nx.DiGraph, tollerance):
         err_node_rank = sum([abs(node_rank[n] - node_rank_old[n]) for n in node_rank])
 
         if err_node_rank < tollerance:
+            stop_time = time.time()
             print("ERRORE: ", err_node_rank)
             print("TOLLERANZA DEL GRAFO: ", tollerance)
+            print("ITERAZIONI PER LA CONVERGENZA = ", h)
+            print("TEMPO = ", stop_time - start_time)
             break
 
-    stop_time = time.perf_counter()
-
-    return stop_time - start_time, h, edge_rank, node_rank
+    return node_rank
 
 
-def directed_graph_generation(n: int, p: float):
-    return nx.generators.random_graphs.fast_gnp_random_graph(n, p, directed=True)
-
-
-def plot_function(G):
-    pos = nx.layout.spring_layout(G)
-
-    node_sizes = [3 + 10 * i for i in range(len(G))]
-    M = G.number_of_edges()
-    edge_colors = range(2, M + 2)
-    edge_alphas = [(5 + i) / (M + 4) for i in range(M)]
-
-    nodes = nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color="blue")
-    edges = nx.draw_networkx_edges(
-        G,
-        pos,
-        node_size=node_sizes,
-        arrowstyle="->",
-        arrowsize=10,
-        edge_color=edge_colors,
-        edge_cmap=plt.cm.Blues,
-        width=2,
-    )
-    # set alpha value for each edge
-    for i in range(M):
-        edges[i].set_alpha(edge_alphas[i])
-
-    pc = mpl.collections.PatchCollection(edges, cmap=plt.cm.Blues)
-    pc.set_array(edge_colors)
-    plt.colorbar(pc)
-
-    ax = plt.gca()
-    ax.set_axis_off()
-    plt.show()
-
-
-def load_graph_2(csv_file):
+def load_graph(csv_file):
     base_path = Path(__file__).parent
     file_path = (base_path / csv_file).resolve()
     data = open(file_path, "r")
@@ -100,31 +63,9 @@ def load_graph_2(csv_file):
 if __name__ == '__main__':
     n = 22470
     p = 0.00068
-    tollerance = 1e-6
 
-    G = load_graph_2(csv_file="../../musae_facebook_edges.csv")
+    G = load_graph(csv_file="../../musae_facebook_edges.csv")
 
-    time, iterations, edge_rank, node_rank = pagerank(G, tollerance)
+    node_rank = pagerank(G)
 
-    print("NODI = ", len(node_rank))
-    print("ARCHI = ", len(edge_rank))
-    print("TOLLERANZA = ", tollerance)
-    print("ITERAZIONI PER LA CONVERGENZA = ", iterations)
-    print("TEMPO = ", time)
-
-    '''pos = nx.spring_layout(G)
-    labels = nx.get_edge_attributes(G, 'weight')
-    nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=labels)
-    plt.show()'''
-
-    ''' for edge in G.edges:
-        print(edge)
-        if edge[0] in b.keys():
-            b[edge[0]] += 1
-            rank += 1
-        else:
-            b[edge[0]] = 1
-            rank += 1
-
-        if edge[0] > h:
-            h += 1'''
+    print(node_rank) #chiave = nodo valore = rank

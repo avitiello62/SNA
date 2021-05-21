@@ -1,4 +1,5 @@
 from es1.main import *
+from es2.src.pagerank import *
 from utils.lesson2 import *
 from utils.priorityq import PriorityQueue
 
@@ -41,11 +42,12 @@ if __name__ == '__main__':
     G.add_edge('2', '3')
     G.add_edge('3', '1')
 
-    G = load_dataset("facebook_large/musae_facebook_edges.csv")
+    G = load_dataset("../facebook_large/musae_facebook_edges.csv")
 
     top_number = 500
-    print("Degree")
-    rank = top(G, degree, top_number)
-    for k in clusters:
-        print("Cluster {} : {}".format(k, clusters[k]))
-    save_dict_on_file(clusters, 'four_means_opt.pkl')
+    print("Pagerank")
+    rank = top_new(G, pagerank, top_number)
+    i = 1
+    for k in rank:
+        print("Position {}: node = {}".format(i, k))
+        i += 1
