@@ -6,7 +6,7 @@ from networkx.generators.directed import random_uniform_k_out_graph
 from numpy.lib.type_check import real
 from tqdm import tqdm
 import pandas as pd
-from priorityq import PriorityQueue
+from utils.priorityq import PriorityQueue
 import numpy as np
 import random
 from scipy.sparse import linalg
