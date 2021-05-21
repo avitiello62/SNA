@@ -7,7 +7,6 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 
 def load_dataset(csv_file):
     
