@@ -4,10 +4,9 @@ import copy
 import time
 
 
-def pagerank(G):
+def pagerank_naive(G):
     tollerance = 1e-6
     n = len(G.nodes())
-    tollerance = n * tollerance
     h = 0
     edge_rank = {}
     node_rank = {}
@@ -36,7 +35,7 @@ def pagerank(G):
 
         err_node_rank = sum([abs(node_rank[n] - node_rank_old[n]) for n in node_rank])
 
-        if err_node_rank < tollerance:
+        if err_node_rank < n*tollerance:
             stop_time = time.time()
             print("ERRORE: ", err_node_rank)
             print("TOLLERANZA DEL GRAFO: ", tollerance)
@@ -68,4 +67,4 @@ if __name__ == '__main__':
 
     node_rank = pagerank(G)
 
-    print(node_rank) #chiave = nodo valore = rank
+    #print(node_rank) #chiave = nodo valore = rank
