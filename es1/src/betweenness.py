@@ -1,11 +1,13 @@
 import networkx as nx
 import math
-from utils.priorityq import PriorityQueue
+from tqdm import tqdm
 import itertools as it
 from joblib import Parallel, delayed
 import time
+import sys
 
-
+sys.path.append('../utils')
+from priorityq import PriorityQueue
 def betweenness(G):
     edge_btw={frozenset(e):0 for e in G.edges()}
     node_btw={i:0 for i in G.nodes()}
@@ -101,7 +103,7 @@ def betweenness_parallel(G,j=1):
 def compute_btw(G,nodes):
     edge_btw={frozenset(e):0 for e in G.edges()}
     node_btw={i:0 for i in G.nodes()}
-    for s in nodes:
+    for s in tqdm(nodes):
         # Compute the number of shortest paths from s to every other node
         tree=[] #it lists the nodes in the order in which they are visited
         spnum={i:0 for i in G.nodes()} #it saves the number of shortest paths from s to i
@@ -150,15 +152,16 @@ def btw_clustering_parallel(G,j=1):
         edge=tuple(sorted(pq.pop()))
         graph.remove_edges_from([edge])
         cc=list(nx.connected_components(graph))
-    end=time.time()
-    print("Time Exec:",end-start)
+    
+    
     
     label=['first','second','third','fourth']
     final_cluster={}
     
     for i in range(4):
         final_cluster[label[i]]=cc[i]
-        
+    end=time.time() 
+    print("Time Exec:",end-start)  
     return final_cluster
 
 
