@@ -1,4 +1,6 @@
-from es1.main import *
+import time
+
+from es2.src.closeness import parallel_closeness
 from es2.src.pagerank import pagerank_naive
 from utils.lesson2 import *
 from utils.priorityq import PriorityQueue
@@ -63,7 +65,7 @@ if __name__ == '__main__':
     save_list_on_file(top_500_list, 'pagerank_naive.csv')'''
 
 
-    print("Pagerank Vectorized")
+    '''print("Pagerank Vectorized")
     start = time.time()
     top_500_list = top_new(G, vectorized_pagerank, top_number)
     stop = time.time()
@@ -72,7 +74,8 @@ if __name__ == '__main__':
         #print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'pagerank_vectorized.csv')
-    print("TIME: ", stop-start)
+    print("TIME: ", stop-start)'''
+
 
     '''print("Pagerank di Networkx")
     top_500_list = top_new(G, pagerank, top_number)
@@ -81,4 +84,28 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'pagerank_networkx.csv')'''
+
+
+    print("Closeness")
+    start = time.time()
+    top_500_list = top_new(G, closeness, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'closeness.csv')
+    print("TIME: ", stop-start)
+
+    '''print("Parallel Closeness")
+    start = time.time()
+    top_500_list = top_new(G, parallel_closeness, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'parallel_closeness.csv')
+    print("TIME: ", stop - start)'''
+
 
