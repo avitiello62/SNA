@@ -15,7 +15,7 @@ def load_dataset(csv_file):
     return G
 
 
-def vectorized_pagerank(G, d=0.85, tol=1.0e-6, max_iter=200, dense=False):
+def vectorized_pagerank(G, d=0.85, tol=1.0e-11, max_iter=100, dense=False):
     #Transition matrix M
     #rank vector (initially 1/n)
     #update: v' = Mv
@@ -44,7 +44,7 @@ def vectorized_pagerank(G, d=0.85, tol=1.0e-6, max_iter=200, dense=False):
 
     while i<max_iter:
         v_old = v
-        v = M*v_old
+        v = L*v_old
         if dense:
             v = np.dot(M,v_old)
 
@@ -53,9 +53,8 @@ def vectorized_pagerank(G, d=0.85, tol=1.0e-6, max_iter=200, dense=False):
         err = np.absolute(v - v_old).sum()
         if err<N*tol:
             return v
-        
 
-        #print("{}th it. ".format(i))
+        print("{}th it. ".format(i))
         #print("Max 1?: ", (v>1).sum())
         #print(v)        
     

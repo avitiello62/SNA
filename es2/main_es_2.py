@@ -1,7 +1,9 @@
 from es1.main import *
-from es2.src.pagerank import *
+from es2.src.pagerank import pagerank_naive
 from utils.lesson2 import *
 from utils.priorityq import PriorityQueue
+from es2.src.vect_pagerank import *
+from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
 
 
 def top_new(G, measure, k):
@@ -14,6 +16,11 @@ def top_new(G, measure, k):
     for i in range(k):
         out.append(pq.pop())
     return out
+
+
+def save_list_on_file(top_500_list, name, column_name="TOP 500"):
+    df = pd.DataFrame(top_500_list, columns=[column_name])
+    df.to_csv(name, index=False)
 
 
 if __name__ == '__main__':
@@ -45,9 +52,33 @@ if __name__ == '__main__':
     G = load_dataset("../facebook_large/musae_facebook_edges.csv")
 
     top_number = 500
-    print("Pagerank")
-    rank = top_new(G, pagerank, top_number)
+
+
+    '''print("Pagerank")
+    top_500_list = top_new(G, pagerank_naive, top_number)
     i = 1
-    for k in rank:
-        print("Position {}: node = {}".format(i, k))
+    for k in top_500_list:
+        #print("Position {}: node = {}".format(i, k))
         i += 1
+    save_list_on_file(top_500_list, 'pagerank_naive.csv')'''
+
+
+    print("Pagerank Vectorized")
+    start = time.time()
+    top_500_list = top_new(G, vectorized_pagerank, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        #print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'pagerank_vectorized.csv')
+    print("TIME: ", stop-start)
+
+    '''print("Pagerank di Networkx")
+    top_500_list = top_new(G, pagerank, top_number)
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'pagerank_networkx.csv')'''
+
