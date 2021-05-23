@@ -8,7 +8,6 @@ def read_list_from_csv(csv_name):
 
 
 if __name__ == '__main__':
-
     '''
         1) comparare diverse implementazioni della stessa misura di centralità rispetto alla precisione e alla velocità,
         per precisione intendiamo rispetto al risultato della implementazione naive (oppure la implementazione più 
@@ -111,16 +110,9 @@ if __name__ == '__main__':
     print("PAGERANK VS CLOSENESS")
     print("____________________________________________________________________________________________________")
 
-    print("pagerank naive vs closeness naive\nnumber of common top 500 nodes: {}\n"
-          .format(len(closeness_naive_vs_pagerank_naive)))
     print("pagerank naive vs closeness parallel\nnumber of common top 500 nodes: {}\n"
           .format(len(closeness_parallel_vs_pagerank_naive)))
-    print("pagerank networkx vs closeness naive\nnumber of common top 500 nodes: {}\n"
-          .format(len(closeness_naive_vs_pagerank_networkx)))
     print("pagerank networkx vs closeness parallel\nnumber of common top 500 nodes: {}\n"
           .format(len(closeness_parallel_vs_pagerank_networkx)))
-    print("pagerank vectorized vs closeness naive\nnumber of common top 500 nodes: {}\n"
-          .format(len(closeness_naive_vs_pagerank_vectorized)))
     print("pagerank vectorized vs closeness parallel\nnumber of common top 500 nodes: {}\n"
           .format(len(closeness_parallel_vs_pagerank_vectorized)))
-
