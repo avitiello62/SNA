@@ -13,6 +13,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+
 def load_dataset(csv_file):
     
     df_edges = pd.read_csv(csv_file)
@@ -89,7 +90,7 @@ if __name__ == '__main__':
     
     
     
-    G=load_dataset("facebook_large/musae_facebook_edges.csv")
+    G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     sampler = RandomWalkSampler(number_of_nodes = len(G.nodes())/2)
     new_graph = sampler.sample(G)
     print("n. of sampled nodes: " + str(len(new_graph.nodes())))
@@ -108,10 +109,13 @@ if __name__ == '__main__':
     
     '''
     print('Spectral Parallel')#infinito dipende dal tempo /testare con sampling    Arcangelo
+    start = time.time()
     clusters=spectral_clustering_parallel(new_graph,4)
+    end = time.time()
     for k in tqdm(clusters):
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'spectral_parallel.pkl')
+    print("TEMPO: ", end-start)
     
     '''
     print('Spectral ')#infinito 1 volta            Luigi
