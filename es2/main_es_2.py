@@ -1,9 +1,9 @@
 import time
-
-from es2.src.closeness import parallel_closeness
-from es2.src.pagerank import pagerank_naive
+from es2.src.closeness import *
+from es2.src.hits import *
+from es2.src.pagerank import *
 from utils.lesson2 import *
-from utils.priorityq import PriorityQueue
+from utils.priorityq import *
 from es2.src.vect_pagerank import *
 from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
 
@@ -11,9 +11,10 @@ from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_nu
 def top_new(G, measure, k):
     pq = PriorityQueue()
     cen = measure(G)
+    print(cen)
     for u in G.nodes():
-        pq.add(u, -cen[
-            u])  # We use negative value because PriorityQueue returns first values whose priority value is lower
+        pq.add(u, -cen[u])
+        # We use negative value because PriorityQueue returns first values whose priority value is lower
     out = []
     for i in range(k):
         out.append(pq.pop())
@@ -56,12 +57,15 @@ if __name__ == '__main__':
     top_number = 500
 
     '''print("Pagerank")
+    start = time.time()
     top_500_list = top_new(G, pagerank_naive, top_number)
+    stop = time.time()
     i = 1
     for k in top_500_list:
-        #print("Position {}: node = {}".format(i, k))
+        # print("Position {}: node = {}".format(i, k))
         i += 1
-    save_list_on_file(top_500_list, 'pagerank_naive.csv')'''
+    save_list_on_file(top_500_list, 'pagerank_naive.csv')
+    print("TIME: ", stop - start)'''
 
     '''print("Pagerank Vectorized")
     start = time.time()
@@ -102,4 +106,37 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'parallel_closeness.csv')
+    print("TIME: ", stop - start)'''
+
+    '''print("Degree")
+    start = time.time()
+    top_500_list = top_new(G, degree, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        #print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'degree_naive.csv')
+    print("TIME: ", stop-start)'''
+
+    print("Hits Naive")
+    start = time.time()
+    top_500_list = top_new(G, hits, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'hits_naive.csv')
+    print("TIME: ", stop - start)
+
+    '''print("Hits Vectorized")
+    start = time.time()
+    top_500_list = top_new(G, my_hits, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'hits_vectorized.csv')
     print("TIME: ", stop - start)'''

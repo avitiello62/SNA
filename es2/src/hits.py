@@ -20,7 +20,7 @@ def hits(G: nx.Graph, epsilon=1e-8, normalized=True, max_it=500):
     for i in tqdm(range(max_it)):
         hits_one_iter(G, auth, hub)
 
-    return hits, auth
+    return hub
 
 
 def hits_one_iter(G, auth, hub):
@@ -87,7 +87,7 @@ def my_hits(G, epsilon=1e-8, normalized=True, max_it=50):
             break
         it += 1
 
-    return h, a
+    return h
 
 
 if __name__ == "__main__":
