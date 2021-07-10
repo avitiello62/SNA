@@ -1,0 +1,16 @@
+
+spectral.pkl
+----------------------------------------------------------
+
+company: third
+company: 0.9722222222222222
+	70 elements of 6495 , the 0.01 percentage
+government: first
+government: 0.3107439517044165
+	6846 elements of 6880 , the 1.00 percentage
+politician: second
+politician: 0.058365758754863814
+	15 elements of 5768 , the 0.00 percentage
+tvshow: fourth
+tvshow: 0.4818181818181818
+	53 elements of 3327 , the 0.02 percentage
