@@ -1,3 +1,4 @@
+from networkx.algorithms import cluster
 from src.betweenness import *
 from src.four_means import *
 from src.hierarchical import *
@@ -7,6 +8,9 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import pickle
+
+sys.path.append('../utils')
+from priorityq import PriorityQueue
 
 def load_dataset(csv_file):
     
@@ -59,18 +63,70 @@ if __name__ == '__main__':
     
     G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
+    #G = nx.Graph()
+    
+    
+    #G=nx.gnp_random_graph(20,0.50,seed=11)
     
     
     
-    
-    
-    
-    print('BTW Parallel ')#40min    5/10 volte     alberto
-    clusters=btw_clustering_parallel(G,8)
-    for k in clusters:
-        print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'../btw_parallel2.pkl')
-
 
     
     
+    
+    
+
+
+   
+    #a valle del clustering, per ogni cluster contare la frequenza delle varie classi vere e assegnare la percentuale piu alta ad ognuno
+    
+    real_clusters=load_real_cluster("../facebook_large/musae_facebook_target.csv")
+    #G=load_dataset("../facebook_large/musae_facebook_edges.csv")
+    
+    label=['first','second','third','fourth']
+    f = open("demofile4.txt", "w")
+    
+    for i in range(1):
+        pq=PriorityQueue()
+        name="spectral"+".pkl"
+        four_means_clusters=load_dict_from_file(name)
+        f.write("\n"+name+"\n")
+        f.write("----------------------------------------------------------\n\n")
+        for k in label:
+            cluster_len=len(four_means_clusters[k])
+            print("Cluster {} has {} elements:".format(k,cluster_len))
+            
+            for key in sorted(real_clusters.keys()):
+                intersection=len(real_clusters[key].intersection(four_means_clusters[k]))
+                perc=float(intersection/cluster_len)
+                print("\t{} elements are in the {} cluster, the {:.2f} percentage".format(intersection,key,perc))
+                value=tuple([key,k])
+                pq.add(value,-perc)
+        used_clusters=[]
+        used_real_clusters=[]
+        ass={} 
+        ass_prob={}
+        try:
+            while(True):
+                el,priority=pq.pop_adv()
+                if el[0] in used_real_clusters or el[1] in used_clusters:
+                    
+                    continue
+                used_clusters.append(el[1])
+                used_real_clusters.append(el[0])
+                ass[el[0]]=el[1]
+                ass_prob[el[0]]=-priority
+        except:
+            pass
+        
+        for key in sorted(ass.keys()):
+            string=key+": "+ass[key]+"\n"
+            f.write(string)
+            string2=key+": "+str(ass_prob[key])+"\n"
+            f.write(string2)
+            intersection=len(real_clusters[key].intersection(four_means_clusters[ass[key]]))
+            perc=float(intersection/len(real_clusters[key]))
+            print("\t{} elements of {} , the {:.2f} percentage".format(intersection,len(real_clusters[key]),perc))
+            f.write("\t{} elements of {} , the {:.2f} percentage".format(intersection,len(real_clusters[key]),perc))
+            f.write("\n")
+    f.close()

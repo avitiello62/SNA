@@ -5,6 +5,7 @@ import itertools as it
 from joblib import Parallel, delayed
 import time
 import sys
+import matplotlib.pyplot as plt
 
 sys.path.append('../utils')
 from priorityq import PriorityQueue
@@ -143,13 +144,16 @@ def btw_clustering_parallel(G,j=1):
     start=time.time()
     eb,nb=betweenness_parallel(G,j)
     pq=PriorityQueue()
+    
     for i in eb.keys():
         pq.add(i,-eb[i])
+    
     graph=G.copy()
     #we can stop the algorithm when there are only 4 cluster (connected component in the graph)
     cc=[]
     while len(cc)!=4:
         edge=tuple(sorted(pq.pop()))
+        
         graph.remove_edges_from([edge])
         cc=list(nx.connected_components(graph))
     
