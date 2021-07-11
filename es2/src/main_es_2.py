@@ -1,11 +1,9 @@
 import time
-from es2.src.closeness import *
-from es2.src.hits import *
-from es2.src.pagerank import *
-from utils.lesson2 import *
 from utils.priorityq import *
+from es2.src.hits import *
 from es2.src.vect_pagerank import *
-from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
+import pandas as pd
+
 
 
 def top_new(G, measure, k):
@@ -28,30 +26,6 @@ def save_list_on_file(top_500_list, name, column_name="TOP 500"):
 
 if __name__ == '__main__':
     G = nx.Graph()
-    G.add_edge('A', 'B')
-    G.add_edge('A', 'C')
-
-    G.add_edge('A', 'B')
-    G.add_edge('A', 'v')
-    G.add_edge('B', 'C')
-
-    G.add_edge('B', 'D')
-    G.add_edge('D', 'E')
-    G.add_edge('D', 'z')
-
-    G.add_edge('E', 'F')
-    G.add_edge('E', 's')
-    G.add_edge('F', 'G')
-    G.add_edge('F', 'q')
-    G.add_edge('P', 'q')
-    G.add_edge('d', 'q')
-    G.add_edge('F', 'V')
-    G.add_edge('F', 's')
-    G.add_edge('V', '1')
-    G.add_edge('1', '2')
-    G.add_edge('2', '3')
-    G.add_edge('3', '1')
-
     G = load_dataset("../facebook_large/musae_facebook_edges.csv")
 
     top_number = 500
@@ -119,7 +93,7 @@ if __name__ == '__main__':
     save_list_on_file(top_500_list, 'degree_naive.csv')
     print("TIME: ", stop-start)'''
 
-    print("Hits Naive")
+    '''print("Hits Naive")
     start = time.time()
     top_500_list = top_new(G, hits, top_number)
     stop = time.time()
@@ -128,7 +102,7 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'hits_naive.csv')
-    print("TIME: ", stop - start)
+    print("TIME: ", stop - start)'''
 
     '''print("Hits Vectorized")
     start = time.time()

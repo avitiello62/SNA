@@ -58,13 +58,3 @@ def load_graph(csv_file):
 
     return G
 
-
-if __name__ == '__main__':
-    n = 22470
-    p = 0.00068
-
-    G = load_graph(csv_file="../../musae_facebook_edges.csv")
-
-    node_rank = pagerank(G)
-
-    # print(node_rank) #chiave = nodo valore = rank

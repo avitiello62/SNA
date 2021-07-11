@@ -1,8 +1,6 @@
-import networkx as nx
 import math
 import itertools as it
 from joblib import Parallel, delayed
-from tqdm import tqdm
 
 
 # The measure associated to each node is the sum of the (shortest) distances of this node from each remaining node
