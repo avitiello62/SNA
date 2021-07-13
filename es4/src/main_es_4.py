@@ -1,135 +1,154 @@
+import random
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
-import random
+from es3.src.main_es_3 import isTruthful
 
 
-# creazione primo dataset
-def create_ds1(dim):
+def coefficient_based_dataset(number_of_iterations):
+    """
+    This function creates a dataset assigning for each restaurant a number of star considering the weighted average of
+    food, service and value with respect to the assignment of three random coefficients. To avoid the discrimination for
+    missing features, if a restaurant is lack of a feature the algorithm assigns a random value
+    :param number_of_iterations:
+    :return: restaurant_features, restaurant_stars
+    """
     restaurant_features = []
     restaurant_stars = []
-    for i in range(0, dim):
+    for i in range(0, number_of_iterations):
         for food in range(0, 6):
             for service in range(-1, 6):
                 for value in range(-1, 6):
+                    restaurant_features.append([food, service, value])
                     if service == -1:
-                        sv = random.randint(0, 5)
+                        sv = random.randint(0, 6)
                     else:
                         sv = service
                     if value == -1:
-                        vv = random.randint(0, 5)
+                        vv = random.randint(0, 6)
                     else:
                         vv = value
+
                     food_coefficient = random.randint(1, 5)
-                    service_coefficient = random.randint(1, 4)
-                    value_coefficient = random.randint(1, 4)
-                    star = round((food * food_coefficient + sv * service_coefficient + vv * value_coefficient) / (
-                        random.randint(18, 24)))
-                    restaurant_features.append([food, service, value])
-                    if star >= 3:
-                        restaurant_stars.append(3)
-                    else:
-                        restaurant_stars.append(star + 1)
-    return restaurant_features, restaurant_stars
+                    service_coefficient = random.randint(1, 5)
+                    value_coefficient = random.randint(1, 5)
 
+                    star_coefficient = (food * food_coefficient + sv * service_coefficient + vv * value_coefficient) / (
+                        food_coefficient + service_coefficient + value_coefficient)
 
-def create_ds2(dim):
-    restaurant_features = []
-    restaurant_stars = []
-    for i in range(0, dim):
-        for food in range(0, 6):
-            for service in range(-1, 6):
-                for value in range(-1, 6):
-                    max = np.array([food, service, value]).max()
-                    if max >= 4:
-                        prob = random.random()
-                        if prob > 0.15 * max:
-                            star = 3
-                        else:
-                            star = 2
-                    elif max == 3:
-                        prob = random.random()
-                        if prob > 0.8:
-                            star = 3
-                        if 0.3 < prob <= 0.8:
-                            star = 2
-                        if prob <= 0.3:
-                            star = 1
-                    else:
-                        prob = random.random()
-                        if prob > 0.7:
-                            star = 2
-                        else:
-                            star = 1
-                    restaurant_features.append([food, service, value])
+                    if star_coefficient >= 3.5:
+                        star = 3
+                    if 1.7 <= star_coefficient < 3.5:
+                        star = 2
+                    if star_coefficient < 1.7:
+                        star = 1
                     restaurant_stars.append(star)
+
     return restaurant_features, restaurant_stars
 
 
-# creazione dataset 3
-def create_ds3(dim):
+def max_based_dataset(number_of_iterations):
+    """
+    This function creates a dataset assigning for each restaurant a number of star considering the max value among its
+    food, service and value with respect to a random probability
+    :param number_of_iterations:
+    :return: restaurant_features,restaurant_stars
+    """
     restaurant_features = []
     restaurant_stars = []
-    for i in range(0, dim):
+
+    for i in range(0, number_of_iterations):
         for food in range(0, 6):
             for service in range(-1, 6):
                 for value in range(-1, 6):
-                    restaurant_features.append([food, service, value])
+                    v = np.array([food, service, value])
+                    max_value = v[np.argmax(v)]
+                    probability = random.random()
+                    if max_value > 4.5:
+                        if probability < 0.1:
+                            star = 1
+                        elif probability < 0.5:
+                            star = 2
+                        else:
+                            star = 3
+                    elif max_value > 3.5:
+                        if probability < 0.20:
+                            star = 1
+                        elif probability < 0.8:
+                            star = 2
+                        else:
+                            star = 3
+                    elif max_value > 2.5:
+                        if probability < 0.3:
+                            star = 1
+                        elif probability < 0.95:
+                            star = 2
+                        else:
+                            star = 3
+                    else:
+                        if probability < 0.15:
+                            star = 2
+                        else:
+                            star = 1
+                    restaurant_features.append(tuple([food, service, value]))
+                    restaurant_stars .append(star)
+
+    return restaurant_features,restaurant_stars
+
+
+def average_based_dataset(number_of_iterations):
+    """
+    This function creates a dataset assigning for each restaurant a number of star considering the average value among
+    its food, service and value with respect to a random probability
+    :param number_of_iterations:
+    :return: restaurant_features,restaurant_stars
+    """
+    restaurant_features = []
+    restaurant_stars = []
+    for i in range(0, number_of_iterations):
+        for food in range(0, 6):
+            for service in range(-1, 6):
+                for value in range(-1, 6):
+
                     if service != -1 and value != -1:
-                        avg = (food + service + value) / 3
-                    if service == -1:
-                        avg = (food + value) / 2
-                    if value == -1:
-                        avg = (food + service) / 2
-                    if service == -1 and value == -1:
-                        avg = food
-                    if avg >= 3.5:
+                        average = (food + service + value) / 3
+                    elif service == -1 and value == -1:
+                        average = food
+                    elif service == -1:
+                        average = (food + value) / 2
+                    elif value == -1:
+                        average = (food + service) / 2
+
+                    if average >= 3.5:
                         star = 3 - random.randint(0, 1)
-                    if 1.7 <= avg < 3.5:
+                    if 1.7 <= average < 3.5:
                         star = 2 + random.randint(-1, 1)
-                    if avg < 1.7:
+                    if average < 1.7:
                         star = 1 + random.randint(0, 1)
+                    restaurant_features.append(tuple([food, service, value]))
                     restaurant_stars.append(star)
+
     return restaurant_features, restaurant_stars
 
 
-def create_ds4(dim):
+def totally_random_dataset(number_of_iterations):
+    """
+    This function creates a random dataset
+    :param number_of_iterations:
+    :return: restaurant_features,restaurant_stars
+    """
     restaurant_features = []
     restaurant_stars = []
-    for i in range(0, dim):
+
+    for i in range(0, number_of_iterations):
         for food in range(0, 6):
             for service in range(-1, 6):
                 for value in range(-1, 6):
-                    restaurant_features.append([food, service, value])
-                    restaurant_stars.append(random.randint(1, 3))
+                    star = random.randint(1, 3)
+                    restaurant_features.append(tuple([food, service, value]))
+                    restaurant_stars.append(star)
+
     return restaurant_features, restaurant_stars
-
-
-# permette di verificare che il classificatore rispetti le regole date
-def isTrth(m):
-    print(len(m))
-    for k in m:
-        if k[1] == -1 and k[2] == -1:
-            for i in range(0, 6):
-                for j in range(0, 6):
-                    if m[k] > m[(k[0], i, j)]:
-                        print([k], [k[0], i, j])
-                        print(m[k], m[k[0], i, j])
-                        return False
-        if k[1] == -1:
-            for j in range(0, 6):
-                if m[k] > m[(k[0], j, k[2])]:
-                    print([k], [k[0], j, k[2]])
-                    print(m[k], m[k[0], j, k[2]])
-                    return False
-        if k[2] == -1:
-            for j in range(0, 6):
-                if m[k] > m[(k[0], k[1], j)]:
-                    print([k], [(k[0], k[1], j)])
-                    print(m[k], m[(k[0], k[1], j)])
-                    return False
-    return True
-
 
 # regressore logistico
 def logistic_regression(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
@@ -146,7 +165,7 @@ def logistic_regression(restaurant_features, restaurant_stars, restaurant_featur
         if log_reg.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
             accuracy += 1
 
-    return (isTrth(results)), accuracy / (len(restaurant_stars_test))
+    return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
 
 
 # regressore lineare con pesi positivi
@@ -164,7 +183,7 @@ def linear_regressor(restaurant_features, restaurant_stars, restaurant_features_
         if np.round(lin_reg.predict([restaurant_features_test[i]])) == restaurant_stars_test[i]:
             accuracy += 1
 
-    return isTrth(results), accuracy / (len(restaurant_stars_test))
+    return isTruthful(results), accuracy / (len(restaurant_stars_test))
 
 
 # incentive-compatible logistic regression
@@ -193,10 +212,9 @@ def ic_logisticreg(restaurant_features, restaurant_stars, restaurant_features_te
         if log_reg.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
             accuracy += 1
 
-    return (isTrth(results)), accuracy / (len(restaurant_stars_test))
+    return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
 
-
-if __name__ == '__main__':
+def func():
     th_log1 = 0
     acc_log1 = 0
     th_ic1 = 0
@@ -226,9 +244,9 @@ if __name__ == '__main__':
     acc_lin4 = 0
 
     dim_test = 5
+    X, Y = coefficient_based_dataset(1000)
     for i in range(dim_test):
-        X, Y = create_ds1(1000)
-        Xtest, Ytest = create_ds1(100)
+        Xtest, Ytest = coefficient_based_dataset(100)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -248,8 +266,8 @@ if __name__ == '__main__':
         acc_lin1 += acc
         print("---------------------")
 
-        X, Y = create_ds2(1000)
-        Xtest, Ytest = create_ds2(100)
+        Xtest,Ytest= max_based_dataset(100)
+
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -268,8 +286,7 @@ if __name__ == '__main__':
         acc_lin2 += acc
         print("---------------------")
 
-        X, Y = create_ds3(1000)
-        Xtest, Ytest = create_ds3(100)
+        Xtest, Ytest = average_based_dataset(100)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -289,8 +306,7 @@ if __name__ == '__main__':
         acc_lin3 += acc
         print("---------------------")
 
-        X, Y = create_ds4(1000)
-        Xtest, Ytest = create_ds4(100)
+        Xtest, Ytest = totally_random_dataset(100)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -324,3 +340,10 @@ if __name__ == '__main__':
     print(th_log4 / dim_test, acc_log4 / dim_test)
     print(th_ic4 / dim_test, acc_ic4 / dim_test)
     print(th_lin4 / dim_test, acc_lin4 / dim_test)
+
+
+if __name__ == '__main__':
+    dataset = max_based_dataset(100)
+
+
+

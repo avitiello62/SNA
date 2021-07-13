@@ -30,22 +30,22 @@ def performance_analisys():
     print("CSVs Reading")
     # Degree
     print("Reading Degree Results")
-    degree_naive = read_list_from_csv("../es2__/degree_naive.csv")
+    degree_naive = read_list_from_csv("../es2/degree_naive.csv")
     # Closeness
     print("Reading Closeness Results")
-    closeness_naive = read_list_from_csv("../es2__/closeness.csv")
-    closeness_parallel = read_list_from_csv("../es2__/parallel_closeness.csv")
+    closeness_naive = read_list_from_csv("../es2/closeness.csv")
+    closeness_parallel = read_list_from_csv("../es2/parallel_closeness.csv")
     # Betweenness
     print("Reading Betweenness Results")
     # Pagerank
     print("Reading Pagerank Results")
-    pagerank_naive = read_list_from_csv("../es2__/pagerank_naive.csv")
-    pagerank_vectorized = read_list_from_csv("../es2__/pagerank_vectorized.csv")
-    pagerank_networkx = read_list_from_csv("../es2__/pagerank_networkx.csv")
+    pagerank_naive = read_list_from_csv("../es2/pagerank_naive.csv")
+    pagerank_vectorized = read_list_from_csv("../es2/pagerank_vectorized.csv")
+    pagerank_networkx = read_list_from_csv("../es2/pagerank_networkx.csv")
     # HITS
     print("Reading HITS Results")
-    hits_naive = read_list_from_csv("../es2__/hits_naive.csv")
-    hits_parallel = read_list_from_csv("../es2__/hits_vectorized.csv")
+    hits_naive = read_list_from_csv("../es2/hits_naive.csv")
+    hits_parallel = read_list_from_csv("../es2/hits_vectorized.csv")
 
     # List to set conversions
     # Pagerank

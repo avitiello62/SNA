@@ -1,246 +1,270 @@
 import numpy as np
 import random
 import networkx as nx
+import time
 
 
-# creazione primo tipo di dataset
-def create_ds1():
-    restaurant_features = []
-    restaurant_stars = []
-    for i in range(0, 10000):
+def max_based_dataset(number_of_iterations):
+    """
+    This function creates a dataset assigning for each restaurant a number of star considering the max value among its
+    food, service and value with respect to a random probability
+    :param number_of_iterations:
+    :return: dataset
+    """
+    dataset = {}
+
+    for i in range(0, number_of_iterations):
         for food in range(0, 6):
             for service in range(-1, 6):
                 for value in range(-1, 6):
-                    if service == -1:
-                        sv = random.randint(0, 5)
-                    else:
-                        sv = service
-                    if value == -1:
-                        vv = random.randint(0, 5)
-                    else:
-                        vv = value
-                    food_coefficient = random.randint(1, 5)
-                    service_coefficient = random.randint(1, 4)
-                    value_coefficient = random.randint(1, 4)
-                    star = round((food * food_coefficient + sv * service_coefficient + vv * value_coefficient) / (random.randint(18, 24)))
-                    restaurant_features.append([food, service, value])
-                    if star >= 3:
-                        restaurant_stars.append(3)
-                    else:
-                        restaurant_stars.append(star + 1)
-    return restaurant_features, restaurant_stars
-
-
-# creazione secondo tipo di dataset
-def create_ds2():
-    restaurant_features = []
-    restaurant_stars = []
-    for i in range(0, 10000):
-        for food in range(0, 6):
-            for service in range(-1, 6):
-                for value in range(-1, 6):
-                    max = np.array([food, service, value]).max()
-                    if max >= 4:
-                        prob = random.random()
-                        if prob > 0.15 * max:
-                            star = 3
-                        else:
-                            star = 2
-                    elif max == 3:
-                        prob = random.random()
-                        if prob > 0.8:
-                            star = 3
-                        if 0.3 < prob <= 0.8:
-                            star = 2
-                        if prob <= 0.3:
+                    v = np.array([food, service, value])
+                    max_value = v[np.argmax(v)]
+                    probability = random.random()
+                    if max_value > 4.5:
+                        if probability < 0.1:
                             star = 1
+                        elif probability < 0.5:
+                            star = 2
+                        else:
+                            star = 3
+                    elif max_value > 3.5:
+                        if probability < 0.20:
+                            star = 1
+                        elif probability < 0.8:
+                            star = 2
+                        else:
+                            star = 3
+                    elif max_value > 2.5:
+                        if probability < 0.3:
+                            star = 1
+                        elif probability < 0.95:
+                            star = 2
+                        else:
+                            star = 3
                     else:
-                        prob = random.random()
-                        if prob > 0.7:
+                        if probability < 0.15:
                             star = 2
                         else:
                             star = 1
-                    restaurant_features.append([food, service, value])
-                    restaurant_stars.append(star)
-    return restaurant_features, restaurant_stars
+                    dataset[tuple([food, service, value])] = star
+
+    return dataset
 
 
-# creazione terzo tipo di dataset
-def create_ds3():
-    restaurant_features = []
-    restaurant_stars = []
-    for i in range(0, 10000):
+def average_based_dataset(number_of_iterations):
+    """
+    This function creates a dataset assigning for each restaurant a number of star considering the average value among
+    its food, service and value with respect to a random probability
+    :param number_of_iterations:
+    :return: dataset
+    """
+    dataset = {}
+    for i in range(0, number_of_iterations):
         for food in range(0, 6):
             for service in range(-1, 6):
                 for value in range(-1, 6):
-                    restaurant_features.append([food, service, value])
+
                     if service != -1 and value != -1:
-                        avg = (food + service + value) / 3
-                    elif service == -1:
-                        avg = (food + value) / 2
-                    elif value == -1:
-                        avg = (food + service) / 2
+                        average = (food + service + value) / 3
                     elif service == -1 and value == -1:
-                        avg = food
-                    if avg >= 3.5:
+                        average = food
+                    elif service == -1:
+                        average = (food + value) / 2
+                    elif value == -1:
+                        average = (food + service) / 2
+
+                    if average >= 3.5:
                         star = 3 - random.randint(0, 1)
-                    if 1.7 <= avg < 3.5:
+                    if 1.7 <= average < 3.5:
                         star = 2 + random.randint(-1, 1)
-                    if avg < 1.7:
+                    if average < 1.7:
                         star = 1 + random.randint(0, 1)
-                    restaurant_stars.append(star)
-    return restaurant_features, restaurant_stars
+                    dataset[tuple([food, service, value])] = star
+
+    return dataset
 
 
-# creazione quarto dataset
-def create_ds4():
-    restaurant_features = []
-    restaurant_stars = []
-    for i in range(0, 10000):
-        for f in range(0, 6):
-            for s in range(-1, 6):
-                for v in range(-1, 6):
-                    restaurant_features.append([f, s, v])
-                    restaurant_stars.append(random.randint(1, 3))
-    return restaurant_features, restaurant_stars
+def totally_random_dataset(number_of_iterations):
+    """
+        This function creates a random dataset
+        :param number_of_iterations:
+        :return: dataset
+        """
+    dataset = {}
+
+    for i in range(0, number_of_iterations):
+        for food in range(0, 6):
+            for service in range(-1, 6):
+                for value in range(-1, 6):
+                    star = random.randint(1, 3)
+                    dataset[tuple([food, service, value])] = star
+    return dataset
 
 
-# dato il dataset restituisce un dizionario con la probabilità che una data combinzione di voti ottenga un certo numero di stelle
-def prob(restaurant_features, restaurant_stars):
+def probability_computation(dataset):
+    """
+    This function calculates the a priori probability of each tuple (food, service, value) to receive a given stars
+    number based on statistical average
+    (calculated as: number of (tuple (food, service, value), stars)/number of (tuple (food, service, value), *)
+    :param dataset
+    :return: percentages_map
+    """
     percentages_map = {}  # mappa delle percentuali
     total_votes_map = {}  # mappa delle combinzioni di voti totali
-    for i in range(len(restaurant_features)):
-        if tuple(restaurant_features[i]) not in total_votes_map:
-            total_votes_map[tuple(restaurant_features[i])] = 1
+    for key in dataset.keys():
+        if key not in total_votes_map:
+            total_votes_map[key] = 1
         else:
-            total_votes_map[tuple(restaurant_features[i])] += 1
+            total_votes_map[key] += 1
 
-        if tuple(restaurant_features[i]) + (restaurant_stars[i],) not in percentages_map:
-            percentages_map[tuple(restaurant_features[i]) + (restaurant_stars[i],)] = 1
+        if key + (dataset[key],) not in percentages_map:
+            percentages_map[key + (dataset[key],)] = 1
         else:
-            percentages_map[tuple(restaurant_features[i]) + (restaurant_stars[i],)] += 1
-
-    # calcolo delle percentuali
+            percentages_map[key + (dataset[key],)] += 1
     for k in percentages_map:
         percentages_map[k] = percentages_map[k] / total_votes_map[k[:-1]]
 
     return percentages_map
 
 
-# doppio mincut in cascata
-def mincut1_23(probability_dict):
-    # creazione del primo grafo
+def mincut_algorithm(probability_dict):
+    """
+    This function computes the MinCut algorithm two times in order to create two cut on the graph and classify three
+    different classes of restaurants(1 star, 2 stars, 3 stars).
+    :param probability_dict:
+    :return: mincut_result
+    """
     G = nx.DiGraph()
     for food in range(0, 6):
         for service in range(-1, 6):
             for value in range(-1, 6):
                 k = (food, service, value)
                 ks = (food, service, value, 1)
+                # If ks is not in probability_dict there is a high probability that ks is a restaurant with a high value
+                # in its tuple (food, service, value), so its assigned to the second cut
                 if ks not in probability_dict:
                     probability_dict[ks] = 0
-                G.add_edge("s", k,
-                           capacity=probability_dict[ks])  # edge con peso uguale alla probabilità che venga asseganta una stella
-                if (k[1] == -1 and k[2] == -1):
-                    G.add_edge(k, "t", capacity=1 - probability_dict[
-                        ks])  # edge con peso uguale alla probabilità che evnga asseganta più di una stella
-                else:
-                    # combinazione con feature nascoste
-                    v1 = (k[0], k[1], -1)
-                    v2 = (k[0], -1, k[2])
-                    v3 = (k[0], -1, -1)
-                    # edge con pesi infiniti
-                    if k != v1:
-                        G.add_edge(k, v1, capacity=np.inf)
-                    if k != v2:
-                        G.add_edge(k, v2, capacity=np.inf)
-                    if k != v3:
-                        G.add_edge(k, v3, capacity=np.inf)
-                    G.add_edge(k, "t", capacity=1 - probability_dict[
-                        ks])  # edge con peso uguale alla probabilità che venga asseganta più di una stella
+                # Creation of the edge linked to "s" with the probability to receive only one star
+                G.add_edge("s", k, capacity=probability_dict[ks])
+                # If there is at least one feature between service and value, we have to create the edges related to
+                # hidden feature
+                if k[1] != -1 or k[2] != -1:
+                    hidden_feature_service = (k[0], -1, k[2])
+                    hidden_feature_value = (k[0], k[1], -1)
+                    hidden_both_features = (k[0], -1, -1)
+                    #
+                    if k != hidden_feature_service:
+                        G.add_edge(k, hidden_feature_service, capacity=np.inf)
+                    if k != hidden_feature_value:
+                        G.add_edge(k, hidden_feature_value, capacity=np.inf)
+                    if k != hidden_both_features:
+                        G.add_edge(k, hidden_both_features, capacity=np.inf)
+                # Creation of the edge linked to "s" with the probability to receive more than one star
+                G.add_edge(k, "t", capacity=1 - probability_dict[ks])
+    # Computation of the first MinCut algorithm
     cut_value, partition = nx.minimum_cut(G, "s", "t")
-    # costruzione secondo grafo
-    G23 = nx.DiGraph()
 
+    G2 = nx.DiGraph()
     for k in partition[1]:
         if k == 't':
             continue
         k2s = k + (2,)
         k3s = k + (3,)
+        # If k2s is not in probability_dict is assigned to the two stars partition
         if k2s not in probability_dict:
-            probability_dict[k2s] = 0
+            probability_dict[k2s] = 1
+        # If k3s is not in probability_dict is assigned to the three stars partition
         if k3s not in probability_dict:
             probability_dict[k3s] = 0
-        p2 = probability_dict[k2s] / (probability_dict[k3s] + probability_dict[k2s])  # probabilità normalizzata
-        G23.add_edge("s", k, capacity=p2)  # edge con peso uguale alla probabilità che vengano assegante due stelle
-        if (k[1] == -1 and k[2] == -1):
-            G23.add_edge(k, "t",
-                         capacity=1 - p2)  # edge con peso uguale alla probabilità che vengano assegante più di due stelle
+
+        if probability_dict[k2s] > probability_dict[k3s]:
+            probability_cut_2s = probability_dict[k2s]
+            probability_cut_3s = 1 - probability_dict[k2s]
         else:
-            # edge con pesi infiniti
-            v1 = (k[0], k[1], -1)
-            v2 = (k[0], -1, k[2])
-            v3 = (k[0], -1, -1)
-            if k != v1 and v1 in partition[1]:
-                G23.add_edge(k, v1, capacity=np.inf)
-            if k != v2 and v2 in partition[1]:
-                G23.add_edge(k, v2, capacity=np.inf)
-            if k != v3 and v3 in partition[1]:
-                G23.add_edge(k, v3, capacity=np.inf)
-            G23.add_edge(k, "t",
-                         capacity=1 - p2)  # edge con peso uguale alla probabilità che vengano assegante più di due stelle
-    cut_value, partition2 = nx.minimum_cut(G23, "s", "t")
-    # costruzione del dizionario dei risualtati finali
-    mapresults = {}
+            probability_cut_2s = 1 - probability_dict[k3s]
+            probability_cut_3s = probability_dict[k3s]
+
+        # Creation of the edge linked to "s" with the probability to receive two stars
+        G2.add_edge("s", k, capacity=probability_cut_2s)
+
+        if k[1] != -1 or k[2] != -1:
+            hidden_feature_service = (k[0], -1, k[2])
+            hidden_feature_value = (k[0], k[1], -1)
+            hidden_both_features = (k[0], -1, -1)
+
+            if k != hidden_feature_service and hidden_feature_service in partition[1]:
+                G2.add_edge(k, hidden_feature_service, capacity=np.inf)
+            if k != hidden_feature_value and hidden_feature_value in partition[1]:
+                G2.add_edge(k, hidden_feature_value, capacity=np.inf)
+            if k != hidden_both_features and hidden_both_features in partition[1]:
+                G2.add_edge(k, hidden_both_features, capacity=np.inf)
+
+        # Creation of the edge linked to "s" with the probability to receive three stars
+        G2.add_edge(k, "t", capacity=probability_cut_3s)
+
+    # Computation of the second MinCut algorithm
+    cut_value, partition2 = nx.minimum_cut(G2, "s", "t")
+
+    # Creation of the dict containing the results of the classification
+    mincut_result = {}
     for food in range(0, 6):
         for service in range(-1, 6):
             for value in range(-1, 6):
                 tr = (food, service, value)
                 if tr in partition[0]:
-                    mapresults[tr] = 1
+                    mincut_result[tr] = 1
                     continue
                 if tr in partition2[0]:
-                    mapresults[tr] = 2
+                    mincut_result[tr] = 2
                     continue
-                mapresults[tr] = 3
-    return mapresults
+                mincut_result[tr] = 3
+    return mincut_result
 
 
-# permette di verificare che il classificatore rispetti le regole date
-def isTrth(m):
-    for k in m:
-        # controllo rispetto ad un comabinazione in cui sono nascoste due feature
+def isTruthful(result):
+    """
+    This function checks the results of the MinCut algorithm and returns True if the result is Truthful with respect of
+    the rules, False otherwise
+    :param result:
+    :return: boolean
+    """
+    for k in result:
+        # Checks the rule when both service and value are missing
         if k[1] == -1 and k[2] == -1:
-            for i in range(0, 6):
-                for j in range(0, 6):
-                    if m[k] > m[(k[0], i, j)]:
-                        # print([k],[k[0],i,j])
+            for service in range(0, 6):
+                for value in range(0, 6):
+                    if result[k] > result[(k[0], service, value)]:
                         return False
-        # controllo rispetto ad un comabinazione in cui è nascosta solo la feature s
+        # Checks the rule when service is missing
         if k[1] == -1:
-            for j in range(0, 6):
-                if m[k] > m[(k[0], j, k[2])]:
-                    # print([k],[k[0],j,k[2]])
+            for service in range(0, 6):
+                if result[k] > result[(k[0], service, k[2])]:
                     return False
-        # controllo rispetto ad un comabinazione in cui è nascosta solo la feature v
+        # Checks the rule when value is missing
         if k[2] == -1:
-            for j in range(0, 6):
-                if m[k] > m[(k[0], k[1], j)]:
-                    # print([k],[(k[0],k[1],j)])
+            for value in range(0, 6):
+                if result[k] > result[(k[0], k[1], value)]:
                     return False
     return True
 
 
-# test sui vari datatset
 if __name__ == '__main__':
-    for i in range(10):
-        restaurant_features, restaurant_stars = create_ds1()
-        print(isTrth(mincut1_23(prob(restaurant_features, restaurant_stars))))
+    number_of_iterations = 1000
+    datasets = [max_based_dataset(number_of_iterations),
+                average_based_dataset(number_of_iterations),
+                totally_random_dataset(number_of_iterations)]
 
-        restaurant_features, restaurant_stars = create_ds2()
-        print(isTrth(mincut1_23(prob(restaurant_features, restaurant_stars))))
+    time1 = time.time()
+    mincut_dataset_1 = mincut_algorithm(probability_computation(datasets[0]))
 
-        restaurant_features, restaurant_stars = create_ds3()
-        print(isTrth(mincut1_23(prob(restaurant_features, restaurant_stars))))
+    time2 = time.time()
+    mincut_dataset_2 = mincut_algorithm(probability_computation(datasets[1]))
 
-        restaurant_features, restaurant_stars = create_ds4()
-        print(isTrth(mincut1_23(prob(restaurant_features, restaurant_stars))))
+    time3 = time.time()
+    mincut_dataset_3 = mincut_algorithm(probability_computation(datasets[2]))
+
+    time4 = time.time()
+
+    print(isTruthful(mincut_dataset_1), time2 - time1)
+    print(isTruthful(mincut_dataset_1), time3 - time2)
+    print(isTruthful(mincut_dataset_1), time4 - time3)
