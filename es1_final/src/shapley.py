@@ -60,7 +60,7 @@ def shapley_threshold(G, k, C=None):
 
     return sv
 
-def shapley_closeness(G):
+def shapley_closeness(G, f):
     """
     :param G: Weighted networkx graph
     :param f: A function for the distance
@@ -86,11 +86,11 @@ def shapley_closeness(G):
                 currSV = (f_dist(distances[index])/(1+index)) - sum
 
             shapley[nodes[index]] += currSV
-            sum += f_dist(distances[index])/(index*(1+index))
+            sum += f(distances[index])/(index*(1+index))
             prevDistance = distances[index]
             prevSV = currSV
             index -= 1
-        shapley[v] += f_dist(0) - sum
+        shapley[v] += f(0) - sum
 
     return shapley
 
@@ -106,16 +106,17 @@ def dijkstra(start, G:nx.Graph):
     for v in G.nodes():
         if not v==start:
             dist[v] = np.Inf
-
         increasing_order_dist.add(v, dist[v])
         open.add(v, dist[v])
-
 
     while not open.is_empty():
         u = open.pop()
         for v in G.neighbors(u):
             #extract current weight between u and the current neighboor v
-            w = G[u][v]["weight"]
+            try:
+                w = G[u][v]["weight"]
+            except KeyError:
+                w = 1 #For unweighted graph
             alt = dist[u] + w
             if alt < dist[v]:
                 dist[v] = alt
@@ -139,12 +140,12 @@ if __name__ == '__main__':
     G.add_edge('D', 'B', weight=7)
     G.add_edge('A', 'C', weight=2)
     G.add_edge('A', 'v', weight=7)
-    G.add_edge('B', 'C', weight=6)
+    G.add_edge('B', 'C')
     G.add_edge('D', 'E', weight=6)
     G.add_edge('F', 'G', weight=4)
     G.add_edge('G', 'H', weight=2)
     G.add_edge('A', 'F', weight=9)
-    print(shapley_closeness(G))
+    print(shapley_closeness(G, f_dist))
 
 
 
