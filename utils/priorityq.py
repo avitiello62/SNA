@@ -37,6 +37,13 @@ class PriorityQueue:
                 return task
         raise KeyError('pop from an empty priority queue')
 
+    def is_empty(self):
+        for el in self.pq:
+            if el[-1] is not REMOVED:
+                return False
+        return True
+
+
     def pop_adv(self):
         'Remove and return the lowest priority task. Raise KeyError if empty.'
         while self.pq:
