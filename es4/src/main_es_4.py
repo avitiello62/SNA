@@ -34,7 +34,7 @@ def coefficient_based_dataset(number_of_iterations):
                     value_coefficient = random.randint(1, 5)
 
                     star_coefficient = (food * food_coefficient + sv * service_coefficient + vv * value_coefficient) / (
-                        food_coefficient + service_coefficient + value_coefficient)
+                            food_coefficient + service_coefficient + value_coefficient)
 
                     if star_coefficient >= 3.5:
                         star = 3
@@ -91,9 +91,9 @@ def max_based_dataset(number_of_iterations):
                         else:
                             star = 1
                     restaurant_features.append(tuple([food, service, value]))
-                    restaurant_stars .append(star)
+                    restaurant_stars.append(star)
 
-    return restaurant_features,restaurant_stars
+    return restaurant_features, restaurant_stars
 
 
 def average_based_dataset(number_of_iterations):
@@ -133,7 +133,7 @@ def average_based_dataset(number_of_iterations):
 
 def totally_random_dataset(number_of_iterations):
     """
-    This function creates a random dataset
+    This function creates a random dataset.
     :param number_of_iterations:
     :return: restaurant_features,restaurant_stars
     """
@@ -150,8 +150,16 @@ def totally_random_dataset(number_of_iterations):
 
     return restaurant_features, restaurant_stars
 
-# regressore logistico
+
 def logistic_regression(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+    """
+
+    :param restaurant_features:
+    :param restaurant_stars:
+    :param restaurant_features_test:
+    :param restaurant_stars_test:
+    :return:
+    """
     log_reg = LogisticRegression()
     log_reg.fit(restaurant_features, restaurant_stars)
     results = {}
@@ -168,8 +176,15 @@ def logistic_regression(restaurant_features, restaurant_stars, restaurant_featur
     return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
 
 
-# regressore lineare con pesi positivi
 def linear_regressor(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+    """
+
+    :param restaurant_features:
+    :param restaurant_stars:
+    :param restaurant_features_test:
+    :param restaurant_stars_test:
+    :return:
+    """
     lin_reg = LinearRegression(positive=True)
     lin_reg.fit(restaurant_features, restaurant_stars)
     results = {}
@@ -186,8 +201,15 @@ def linear_regressor(restaurant_features, restaurant_stars, restaurant_features_
     return isTruthful(results), accuracy / (len(restaurant_stars_test))
 
 
-# incentive-compatible logistic regression
 def ic_logisticreg(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+    """
+
+    :param restaurant_features:
+    :param restaurant_stars:
+    :param restaurant_features_test:
+    :param restaurant_stars_test:
+    :return:
+    """
     log_reg = LogisticRegression()
     log_reg.fit(restaurant_features, restaurant_stars)
 
@@ -213,6 +235,7 @@ def ic_logisticreg(restaurant_features, restaurant_stars, restaurant_features_te
             accuracy += 1
 
     return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
+
 
 def func():
     th_log1 = 0
@@ -243,10 +266,11 @@ def func():
     th_lin4 = 0
     acc_lin4 = 0
 
-    dim_test = 5
-    X, Y = coefficient_based_dataset(1000)
+    dim_test = 1
+
+    X, Y = coefficient_based_dataset(10000)
     for i in range(dim_test):
-        Xtest, Ytest = coefficient_based_dataset(100)
+        Xtest, Ytest = coefficient_based_dataset(1000)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -266,7 +290,7 @@ def func():
         acc_lin1 += acc
         print("---------------------")
 
-        Xtest,Ytest= max_based_dataset(100)
+        Xtest, Ytest = max_based_dataset(1000)
 
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
@@ -286,7 +310,7 @@ def func():
         acc_lin2 += acc
         print("---------------------")
 
-        Xtest, Ytest = average_based_dataset(100)
+        Xtest, Ytest = average_based_dataset(1000)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -306,7 +330,7 @@ def func():
         acc_lin3 += acc
         print("---------------------")
 
-        Xtest, Ytest = totally_random_dataset(100)
+        Xtest, Ytest = totally_random_dataset(1000)
         th, acc = logistic_regression(X, Y, Xtest, Ytest)
         print(th, acc)
         if th is True:
@@ -343,7 +367,4 @@ def func():
 
 
 if __name__ == '__main__':
-    dataset = max_based_dataset(100)
-
-
-
+    func()
