@@ -3,7 +3,6 @@ import random
 import networkx as nx
 import time
 
-
 def max_based_dataset(number_of_iterations):
     """
     This function creates a dataset assigning for each restaurant a number of star considering the max value among its
