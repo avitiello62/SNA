@@ -2,6 +2,9 @@ import random
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
+import sys
+
+sys.path.append('../../')
 from es3.src.main_es_3 import isTruthful
 
 
