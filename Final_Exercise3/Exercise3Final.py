@@ -2,7 +2,11 @@ import math
 import random
 import networkx as nx
 import numpy as np
+import sys
+from tqdm import tqdm
+from numpy.lib.function_base import average
 
+sys.path.append("../")
 from utils.utils import get_random_graph
 from es1_final.src import fj_dynamics
 from utils.utils import FJ_dynamics
@@ -64,20 +68,29 @@ def plurality_voting(candidates_orientation, nodes_preferences):
 
 def get_best_seeds(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, closeness, already_voting_nodes):
     seeds = []
-    for node in graph.nodes():
-        for neighbour in graph[node]:
-            if neighbour not in already_voting_nodes:
-                difference = abs(nodes_preferencies[int(neighbour)] - candidates_orientation[candidate])
-                # qua ci stava la funzione logistica rip, se vogliamo fare altro lo dobbiamo mettere qua
-                closeness[node] *= 1#difference
-
-
-
+    
     while len(seeds) < seed_number and len(closeness) > 0:
         seed = max(closeness, key=closeness.get)
         if seed not in already_voting_nodes:
             seeds.append(seed)
             closeness.pop(seed)
+    return seeds
+
+def get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, closeness, already_voting_nodes,pref):
+    seeds = []
+    neighbour_distance=[]
+    coefficient={}
+    for node in graph.nodes():
+        
+        average=get_average_orientation(graph,node,pref)
+        coefficient[node]=closeness[node]*(1-abs(average-candidates_orientation[candidate]))
+    
+
+    while len(seeds) < seed_number and len(coefficient) > 0:
+        seed = max(coefficient, key=closeness.get)
+        if seed not in already_voting_nodes:
+            seeds.append(seed)
+            coefficient.pop(seed)
     return seeds
 
 
@@ -179,9 +192,175 @@ def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_pr
     after = plurality_voting(candidates_orientation, list(manip.values()))
     prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
                                                                             after, candidate)
-    print("12,", str(prev_cnt) + ",", after_cnt)
+    #print("12,", str(prev_cnt) + ",", after_cnt)
     return initial_preferences, after_fj_dynamics, after, amath
 
+def manipulation_with_vote(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    # Re-mapping graph nodes to strings (if they are ints)
+    mapping = {}
+    for node in graph.nodes():
+        mapping[node] = str(node)
+    nx.relabel_nodes(graph, mapping, False)  # Re-labelling is done in-place
+
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    # Run the dynamics without influence
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    # Select the best seeds
+    # Compute centrality measures
+    clos = shapley_closeness(graph)
+    seeds = get_best_seeds(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    # Create dict node -> stubbornness
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])# Interval of the preferred candidate
+    
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+            
+            if average_neighborhood_orientation < cur_interval[0]:
+                manipulation_factor = cur_interval[1]
+            elif average_neighborhood_orientation > cur_interval[1]:
+                manipulation_factor = cur_interval[0]+0.001
+            else :
+                 manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+                                                                            after, candidate)
+    #print("12,", str(prev_cnt) + ",", after_cnt)
+    return initial_preferences, after_fj_dynamics, after, amath
+
+
+
+
+
+def manipulation_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    # Re-mapping graph nodes to strings (if they are ints)
+    mapping = {}
+    for node in graph.nodes():
+        mapping[node] = str(node)
+    nx.relabel_nodes(graph, mapping, False)  # Re-labelling is done in-place
+
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    # Run the dynamics without influence
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    # Select the best seeds
+    # Compute centrality measures
+    clos = shapley_closeness(graph)
+    seeds = get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    # Create dict node -> stubbornness
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])# Interval of the preferred candidate
+    cur_interval_average = (cur_interval[0] + cur_interval[1]) / 2
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+            manipulation_factor = 2 * cur_interval_average - average_neighborhood_orientation
+            if manipulation_factor > 1:
+                manipulation_factor = 1
+            if manipulation_factor < 0:
+                manipulation_factor = 0
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+                                                                            after, candidate)
+    #print("12,", str(prev_cnt) + ",", after_cnt)
+    return initial_preferences, after_fj_dynamics, after, amath
+
+def manipulation_with_vote_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    # Re-mapping graph nodes to strings (if they are ints)
+    mapping = {}
+    for node in graph.nodes():
+        mapping[node] = str(node)
+    nx.relabel_nodes(graph, mapping, False)  # Re-labelling is done in-place
+
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    # Run the dynamics without influence
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    # Select the best seeds
+    # Compute centrality measures
+    clos = shapley_closeness(graph)
+    seeds = get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    # Create dict node -> stubbornness
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])# Interval of the preferred candidate
+    
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+            
+            if average_neighborhood_orientation < cur_interval[0]:
+                manipulation_factor = cur_interval[1]
+            elif average_neighborhood_orientation > cur_interval[1]:
+                manipulation_factor = cur_interval[0]+0.001
+            else :
+                 manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+                                                                            after, candidate)
+    #print("12,", str(prev_cnt) + ",", after_cnt)
+    return initial_preferences, after_fj_dynamics, after, amath
 
 ##################################################
 # This is code used to perform tests and debug
@@ -192,37 +371,48 @@ density = 0.3
 random_graph = get_random_graph(numNodes, math.ceil((numNodes * (numNodes - 1)) * 0.5 * density), False)
 
 candidates_prob = []
-for _ in range(5):
-    candidates_prob.append(random.uniform(0, 1))
+
 # Override:
-candidates_prob = [0.67, 0.36, 0.57, 0.34, 0.81]
-candidate = random.choice(range(len(candidates_prob)))
-# Override:
-candidate = 2
-# c = np.argmax(np.array(p))
-print("Candidates: ", candidates_prob)
+candidates_prob = [0.0, 0.25, 0.50, 0.75, 1.0]
+#candidate = random.choice(range(len(candidates_prob)))
+
 
 nodes_pref = []
 for _ in range(random_graph.number_of_nodes()):
     nodes_pref.append(random.uniform(0, 1))
-print("Random values generated")
+
 
 increments = {}
 max_increment_num_nodes = 0
 max_increment = 0
+num_of_nodes = [10,15,20,25,30,35,40,45,50]
+result={}
 
-p_voting = plurality_voting(candidates_prob, nodes_pref)
+for i in tqdm(range(5)):
+    candidate=i
+    votes={}
+    for num in num_of_nodes:
+        (prev, middle, after, amath) = manipulation(random_graph, candidates_prob, candidate, num, nodes_pref)
+        prev_cnt, middle_cnt, after_cnt, increment = amath
+        #print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
+        #print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
+        #print("------------------------------------------------------------------------------------------------\n")
+        votes[num]=[prev_cnt,middle_cnt,after_cnt]
+    result[i]=votes
+print(result)
+result={}
 
-num_of_nodes = [10, 15, 20, 25, 30, 40, 50]
 
-for num in num_of_nodes:
-    print("Preferred candidate: " + str(candidate))
-    # print("Seeds: " + str(seeds) + "\t\t# of seeds: " + str(len(seeds)))
-    (prev, middle, after, amath) = manipulation(random_graph, candidates_prob, candidate, num, nodes_pref)
-    prev_cnt, middle_cnt, after_cnt, increment = amath
-    print("Previous voting: " + str(prev))
-    print("Un-manipulated voting: " + str(middle))
-    print("Manipulated voting: " + str(after))
-    print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
-    print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
-    print("------------------------------------------------------------------------------------------------\n")
+
+for i in tqdm(range(5)):
+    candidate=i
+    votes={}
+    for num in num_of_nodes:
+        (prev, middle, after, amath) = manipulation_with_vote(random_graph, candidates_prob, candidate, num, nodes_pref)
+        prev_cnt, middle_cnt, after_cnt, increment = amath
+        #print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
+        #print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
+        #print("------------------------------------------------------------------------------------------------\n")
+        votes[num]=[prev_cnt,middle_cnt,after_cnt]
+    result[i]=votes
+print(result)
