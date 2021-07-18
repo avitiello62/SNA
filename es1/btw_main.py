@@ -84,11 +84,11 @@ if __name__ == '__main__':
     #G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
     label=['first','second','third','fourth']
-    f = open("demofile4.txt", "w")
+    f = open("demofile7.txt", "w")
     
     for i in range(1):
         pq=PriorityQueue()
-        name="spectral"+".pkl"
+        name="betweenness_sampled05"+".pkl"
         four_means_clusters=load_dict_from_file(name)
         f.write("\n"+name+"\n")
         f.write("----------------------------------------------------------\n\n")

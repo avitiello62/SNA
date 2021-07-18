@@ -7,6 +7,7 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import pickle
+import time
 
 def load_dataset(csv_file):
     
@@ -56,7 +57,7 @@ def load_dict_from_file(file_name):
 
 
 if __name__ == '__main__':
-    
+    '''
     G = nx.Graph()
     G.add_edge('A', 'B')
     G.add_edge('A', 'C')
@@ -81,18 +82,22 @@ if __name__ == '__main__':
     G.add_edge('1', '2')
     G.add_edge('2', '3')
     G.add_edge('3', '1')
-    
+    '''
     
     
     G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
-    
-    '''print("4 Means OPT")#1.5s non si deve testare
-    clusters=four_means_clustering_opt(G)
-    for k in clusters:
-        print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'four_means_opt.pkl')'''
+    for i in range (1):
+        #print("4 Means OPT")#1.5s non si deve testare
+        start=time.time()
+        clusters=btw_clustering_parallel(G,8)
+        end=time.time()
+        print(end-start)
+        #for k in clusters:
+        #    print("Cluster {} : {}".format(k,clusters[k]) )
+    #save_dict_on_file(clusters,'four_means_opt.pkl')
     '''
+    
     print("4 Means")#infinito 1 volta                   Mario
     clusters=four_means_clustering(G)
     for k in clusters:
