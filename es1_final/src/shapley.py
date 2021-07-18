@@ -136,15 +136,15 @@ def sorted_elements(dist, pq:PriorityQueue):
 
 if __name__ == '__main__':
     G = nx.Graph()
-    G.add_edge('A', 'D', weight=3)
-    G.add_edge('D', 'B', weight=7)
-    G.add_edge('A', 'C', weight=2)
-    G.add_edge('A', 'v', weight=7)
+    G.add_edge('A', 'D')
+    G.add_edge('D', 'B')
+    G.add_edge('A', 'C')
+    G.add_edge('A', 'v')
     G.add_edge('B', 'C')
-    G.add_edge('D', 'E', weight=6)
-    G.add_edge('F', 'G', weight=4)
-    G.add_edge('G', 'H', weight=2)
-    G.add_edge('A', 'F', weight=9)
+    G.add_edge('D', 'E')
+    G.add_edge('F', 'G')
+    G.add_edge('G', 'H')
+    G.add_edge('A', 'F')
     print(shapley_closeness(G, f_dist))
 
 

@@ -1,4 +1,5 @@
 import numpy as np
+import networkx as nx
 
 def FJ_dynamics(G, b, s, num_iter=100, tolerance=1.0e-5):
     """
@@ -29,3 +30,28 @@ def FJ_dynamics(G, b, s, num_iter=100, tolerance=1.0e-5):
             return x
 
     return -1
+
+if __name__ == '__main__':
+    import random
+    G = nx.Graph()
+    G.add_edge('A', 'D', weight=3)
+    G.add_edge('D', 'B', weight=7)
+    G.add_edge('A', 'C', weight=2)
+    G.add_edge('A', 'v', weight=7)
+    G.add_edge('B', 'C')
+    G.add_edge('D', 'E', weight=6)
+    G.add_edge('F', 'G', weight=4)
+    G.add_edge('G', 'H', weight=2)
+    G.add_edge('A', 'F', weight=9)
+
+    b = {}
+    s = {}
+
+    for v in G.nodes():
+        b[v] = random.uniform(0, 1)
+        s[v] = random.uniform(0, 1)
+
+    if FJ_dynamics(G, b, s) == -1:
+        print("Algorithm does not converge!")
+    else:
+        print("Ok!")

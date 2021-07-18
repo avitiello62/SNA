@@ -3,6 +3,7 @@ import math
 import itertools as it
 from joblib import Parallel, delayed
 
+
 #DIAMETER
 #Classical algorithm: if runs a BFS for each node, and returns the height of the tallest BFS tree
 #It is has computational complexity O(n*m)
@@ -215,19 +216,20 @@ def two_means(G):
 
     print(cluster0, cluster1)
 
-G=nx.Graph()
-G.add_edge('A', 'B')
-G.add_edge('A', 'C')
-G.add_edge('B', 'C')
-G.add_edge('B', 'D')
-G.add_edge('D', 'E')
-G.add_edge('D', 'F')
-G.add_edge('D', 'G')
-G.add_edge('E', 'F')
-G.add_edge('F', 'G')
-print(diameter(G))
-#Observe that on small graphs, as in this case, the overhead of dividing the input, aggregating the output and managing parallelization, makes the parallel algo less convenient than the non-parallel one.
-print(parallel_diam(G,2))
-print(stream_diam(G))
-print(triangles(G))
-print(num_triangles(G))
+if __name__ == '__main__':
+    G=nx.Graph()
+    G.add_edge('A', 'B')
+    G.add_edge('A', 'C')
+    G.add_edge('B', 'C')
+    G.add_edge('B', 'D')
+    G.add_edge('D', 'E')
+    G.add_edge('D', 'F')
+    G.add_edge('D', 'G')
+    G.add_edge('E', 'F')
+    G.add_edge('F', 'G')
+    print(diameter(G))
+    #Observe that on small graphs, as in this case, the overhead of dividing the input, aggregating the output and managing parallelization, makes the parallel algo less convenient than the non-parallel one.
+    print(parallel_diam(G,2))
+    print(stream_diam(G))
+    print(triangles(G))
+    print(num_triangles(G))
