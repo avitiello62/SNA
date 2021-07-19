@@ -7,7 +7,7 @@ from tqdm import tqdm
 # Naive HITS
 
 
-def hits(G: nx.Graph, epsilon=1e-8, normalized=True, max_it=500):
+def hits_naive(G: nx.Graph, epsilon=1e-8, normalized=True, max_it=500):
     nodes = G.nodes
     auth = {}
     hub = {}
@@ -60,7 +60,7 @@ def normalize_auth_hub(G: nx.Graph, auth, hub):
         hub[node] /= hub_sum
 
 
-def my_hits(G, epsilon=1e-8, normalized=True, max_it=50):
+def hits_vectorized(G, epsilon=1e-8, normalized=True, max_it=50):
     L = nx.adjacency_matrix(G)
     L_T = L.transpose()
     n = L.shape[0]
@@ -94,4 +94,4 @@ if __name__ == "__main__":
     from es1.main import load_dataset
 
     G = load_dataset("../facebook_large/musae_facebook_edges.csv")
-    h, a = hits(G)
+    h, a = hits_naive(G)

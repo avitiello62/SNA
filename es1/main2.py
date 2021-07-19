@@ -114,7 +114,7 @@ if __name__ == '__main__':
     end = time.time()
     for k in tqdm(clusters):
         print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'spectral_parallel.pkl')
+    save_dict_on_file(clusters, 'results/spectral_parallel.pkl')
     print("TEMPO: ", end-start)
     
     '''

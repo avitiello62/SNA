@@ -155,7 +155,7 @@ if __name__ == '__main__':
     save_list_on_file(top_500_list, 'hits_vectorized.csv')
     print("TIME: ", stop - start)'''
 
-    print("Betweenness Naive")
+    '''print("Betweenness Naive")
     start = time.time()
     top_500_list = top_new_for_betweenness(G, betweenness, top_number)
     stop = time.time()
@@ -164,9 +164,9 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'betweenness_naive.csv')
-    print("TIME: ", stop - start)
+    print("TIME: ", stop - start)'''
 
-    '''print("Betweenness Parallel")
+    print("Betweenness Parallel")
     start = time.time()
     top_500_list = top_new_for_betweenness(G, betweenness_parallel, top_number)
     stop = time.time()
@@ -175,4 +175,4 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'betweenness_parallel.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
