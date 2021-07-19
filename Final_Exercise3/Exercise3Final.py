@@ -5,17 +5,14 @@ import numpy as np
 import sys
 from tqdm import tqdm
 from numpy.lib.function_base import average
-
+import pandas as pd
 sys.path.append("../")
 from utils.utils import get_random_graph
-from es1_final.src import fj_dynamics
-from utils.utils import FJ_dynamics
-from Final_Exercise3.btw_parallel_pedro import betweenness_parallel
-from utils.utils import shapley_closeness
-from utils.priorityq import PriorityQueue
+from es1_final.src.fj_dynamics import FJ_dynamics
+from es1_final.src.shapley import shapley_closeness , f_dist, shapley_closeness_unweighted_graph
 
 
-def after_manipulation(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_manipulation, favourite_candidate):
+def votes_counter(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_manipulation, favourite_candidate):
     initial_preferences_counter = 0
     after_fj_dynamics_counter = 0
     after_fj_dynamics_and_manipulation_counter = 0
@@ -83,7 +80,12 @@ def get_best_seeds_version_average(graph, candidates_orientation, candidate, see
     for node in graph.nodes():
         
         average=get_average_orientation(graph,node,pref)
-        coefficient[node]=closeness[node]*(1-abs(average-candidates_orientation[candidate]))
+        average_diff=abs(average-candidates_orientation[candidate])
+        if average_diff>0.50:
+            coeff=1
+        else:
+            coeff=2
+        coefficient[node]=closeness[node]*coeff
     
 
     while len(seeds) < seed_number and len(coefficient) > 0:
@@ -165,7 +167,7 @@ def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_pr
 
     # Select the best seeds
     # Compute centrality measures
-    clos = shapley_closeness(graph)
+    clos = shapley_closeness_unweighted_graph(graph,f_dist)
     seeds = get_best_seeds(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
 
     stub = {}
@@ -190,7 +192,7 @@ def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_pr
 
     manip = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manip.values()))
-    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+    prev_cnt, middle_cnt, after_cnt, increment = amath = votes_counter(initial_preferences, after_fj_dynamics,
                                                                             after, candidate)
     #print("12,", str(prev_cnt) + ",", after_cnt)
     return initial_preferences, after_fj_dynamics, after, amath
@@ -218,7 +220,7 @@ def manipulation_with_vote(graph, candidates_orientation, candidate, seed_number
 
     # Select the best seeds
     # Compute centrality measures
-    clos = shapley_closeness(graph)
+    clos = shapley_closeness_unweighted_graph(graph,f_dist)
     seeds = get_best_seeds(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
 
     stub = {}
@@ -245,7 +247,7 @@ def manipulation_with_vote(graph, candidates_orientation, candidate, seed_number
 
     manip = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manip.values()))
-    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+    prev_cnt, middle_cnt, after_cnt, increment = amath = votes_counter(initial_preferences, after_fj_dynamics,
                                                                             after, candidate)
     #print("12,", str(prev_cnt) + ",", after_cnt)
     return initial_preferences, after_fj_dynamics, after, amath
@@ -277,7 +279,7 @@ def manipulation_version_average(graph, candidates_orientation, candidate, seed_
 
     # Select the best seeds
     # Compute centrality measures
-    clos = shapley_closeness(graph)
+    clos = shapley_closeness(graph,f_dist)
     seeds = get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
 
     stub = {}
@@ -302,7 +304,7 @@ def manipulation_version_average(graph, candidates_orientation, candidate, seed_
 
     manip = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manip.values()))
-    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+    prev_cnt, middle_cnt, after_cnt, increment = amath = votes_counter(initial_preferences, after_fj_dynamics,
                                                                             after, candidate)
     #print("12,", str(prev_cnt) + ",", after_cnt)
     return initial_preferences, after_fj_dynamics, after, amath
@@ -330,8 +332,8 @@ def manipulation_with_vote_version_average(graph, candidates_orientation, candid
 
     # Select the best seeds
     # Compute centrality measures
-    clos = shapley_closeness(graph)
-    seeds = get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes)
+    clos = shapley_closeness_unweighted_graph(graph,f_dist)
+    seeds = get_best_seeds_version_average(graph, candidates_orientation, candidate, seed_number, nodes_preferencies, clos, already_voting_nodes,pref)
 
     stub = {}
 
@@ -357,7 +359,7 @@ def manipulation_with_vote_version_average(graph, candidates_orientation, candid
 
     manip = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manip.values()))
-    prev_cnt, middle_cnt, after_cnt, increment = amath = after_manipulation(initial_preferences, after_fj_dynamics,
+    prev_cnt, middle_cnt, after_cnt, increment = amath = votes_counter(initial_preferences, after_fj_dynamics,
                                                                             after, candidate)
     #print("12,", str(prev_cnt) + ",", after_cnt)
     return initial_preferences, after_fj_dynamics, after, amath
@@ -386,23 +388,7 @@ increments = {}
 max_increment_num_nodes = 0
 max_increment = 0
 num_of_nodes = [10,15,20,25,30,35,40,45,50]
-result={}
-
-for i in tqdm(range(5)):
-    candidate=i
-    votes={}
-    for num in num_of_nodes:
-        (prev, middle, after, amath) = manipulation(random_graph, candidates_prob, candidate, num, nodes_pref)
-        prev_cnt, middle_cnt, after_cnt, increment = amath
-        #print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
-        #print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
-        #print("------------------------------------------------------------------------------------------------\n")
-        votes[num]=[prev_cnt,middle_cnt,after_cnt]
-    result[i]=votes
-print(result)
-result={}
-
-
+result1={}
 
 for i in tqdm(range(5)):
     candidate=i
@@ -414,5 +400,43 @@ for i in tqdm(range(5)):
         #print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
         #print("------------------------------------------------------------------------------------------------\n")
         votes[num]=[prev_cnt,middle_cnt,after_cnt]
-    result[i]=votes
-print(result)
+    result1[i]=votes
+
+
+
+
+result2={}
+for i in tqdm(range(5)):
+    candidate=i
+    votes={}
+    for num in num_of_nodes:
+        (prev, middle, after, amath) = manipulation_with_vote_version_average(random_graph, candidates_prob, candidate, num, nodes_pref)
+        prev_cnt, middle_cnt, after_cnt, increment = amath
+        #print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
+        #print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
+        #print("------------------------------------------------------------------------------------------------\n")
+        votes[num]=[prev_cnt,middle_cnt,after_cnt]
+    result2[i]=votes
+
+tab={}
+
+tab['*']=['start','10','15','20','25','30','35','40','45','50']
+for i in range(5):
+    tab[str(i)]=[result1[i][10][1]]
+    for j in range(10,55,5):
+        tab[str(i)].append(result1[i][j][2])
+df=pd.DataFrame(data=tab)
+print(df.head())
+df.to_csv("dict4.csv")
+
+
+tab={}
+
+tab['*']=['start','10','15','20','25','30','35','40','45','50']
+for i in range(5):
+    tab[str(i)]=[result2[i][10][1]]
+    for j in range(10,55,5):
+        tab[str(i)].append(result2[i][j][2])
+df=pd.DataFrame(data=tab)
+print(df.head())
+df.to_csv("dict5.csv")
