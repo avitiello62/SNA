@@ -6,6 +6,7 @@ from utils.priorityq import *
 from es2.src.vect_pagerank import *
 from es1.src.betweenness import betweenness
 from es1.src.betweenness import betweenness_parallel
+from es1.src.degree import degree
 from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
 
 
@@ -70,101 +71,92 @@ if __name__ == '__main__':
 
     top_number = 500
 
-    '''print("Pagerank")
+    print("Pagerank")
     start = time.time()
     top_500_list = top_new(G, pagerank_naive, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'pagerank_naive.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
 
-    '''print("Pagerank Vectorized")
+    print("Pagerank Vectorized")
     start = time.time()
     top_500_list = top_new(G, vectorized_pagerank, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        #print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'pagerank_vectorized.csv')
-    print("TIME: ", stop-start)'''
+    print("TIME: ", stop-start)
 
-    '''print("Pagerank di Networkx")
+    print("Pagerank di Networkx")
     top_500_list = top_new(G, pagerank, top_number)
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
-    save_list_on_file(top_500_list, 'pagerank_networkx.csv')'''
+    save_list_on_file(top_500_list, 'pagerank_networkx.csv')
 
-    '''print("Closeness")
+    print("Closeness")
     start = time.time()
     top_500_list = top_new(G, closeness, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'closeness.csv')
-    print("TIME: ", stop-start)'''
+    print("TIME: ", stop-start)
 
-    '''print("Parallel Closeness")
+    print("Parallel Closeness")
     start = time.time()
     top_500_list = top_new(G, parallel_closeness, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'parallel_closeness.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
 
-    '''print("Degree")
+    print("Degree")
     start = time.time()
     top_500_list = top_new(G, degree, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        #print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'degree_naive.csv')
-    print("TIME: ", stop-start)'''
+    print("TIME: ", stop-start)
 
-    '''print("Hits Naive")
+    print("Hits Naive")
     start = time.time()
-    top_500_list = top_new(G, hits, top_number)
+    top_500_list = top_new(G, hits_naive, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'hits_naive.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
 
-    '''print("Hits Vectorized")
+    print("Hits Vectorized")
     start = time.time()
-    top_500_list = top_new(G, my_hits, top_number)
+    top_500_list = top_new(G, hits_vectorized, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'hits_vectorized.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
 
-    '''print("Betweenness Naive")
+    print("Betweenness Naive")
     start = time.time()
     top_500_list = top_new_for_betweenness(G, betweenness, top_number)
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'betweenness_naive.csv')
-    print("TIME: ", stop - start)'''
+    print("TIME: ", stop - start)
 
     print("Betweenness Parallel")
     start = time.time()
@@ -172,7 +164,6 @@ if __name__ == '__main__':
     stop = time.time()
     i = 1
     for k in top_500_list:
-        # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'betweenness_parallel.csv')
     print("TIME: ", stop - start)

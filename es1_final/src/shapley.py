@@ -139,7 +139,63 @@ def sorted_elements(dist, pq: PriorityQueue):
         distances.append(dist[k])
     return distances, sorted_list
 
+def BFS_for_shapley_closeness(graph, u):
+    level = 1
+    n = graph.number_of_nodes()
+    clevel = [u]
+    visited = []
+    visited.append(u)
+    dist = {}
 
+    while len(visited) < n:
+        nlevel = []
+        if len(clevel) == 0 and level == 100:
+            sys.exit()
+        while len(clevel) > 0:
+            c = clevel.pop()
+            for v in graph[c]:
+                if v not in visited:
+                    visited.append(v)
+                    nlevel.append(v)
+                    dist[v] = level
+        level += 1
+        clevel = nlevel
+
+    return list(dist.keys()), list(dist.values())
+
+def shapley_closeness_unweighted_graph(G, f):
+    """
+    :param G: Unweighted networkx graph
+    :param f: A function for the distance
+    :return: Shapley value for the characteristic function for all nodes
+    """
+    # Initialise
+    shapley = {}
+
+    for v in G.nodes():
+        shapley[v] = 0
+
+    for v in G.nodes():
+        nodes, distances = BFS_for_shapley_closeness(G, v)
+        index = len(nodes) - 1
+        sum = 0
+        prevDistance = -1
+        prevSV = -1
+
+        while index > 0:
+            if distances[index] == prevDistance:
+                currSV = prevSV
+            else:
+                currSV = (f_dist(distances[index]) / (1 + index)) - sum
+
+            shapley[nodes[index]] += currSV
+            sum += f(distances[index]) / (index * (1 + index))
+            prevDistance = distances[index]
+            prevSV = currSV
+            index -= 1
+        shapley[v] += f(0) - sum
+
+    return shapley
 if __name__ == '__main__':
     G = nx.Graph()
     G.add_edge('A', 'D')
