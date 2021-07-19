@@ -16,7 +16,7 @@ def load_dataset(csv_file):
     return G
 
 
-def vectorized_pagerank(G, d=0.85, tol=1.0e-11, max_iter=100, dense=False):
+def vectorized_pagerank(G, d=0.85, tol=1.0e-6, max_iter=100, dense=False):
     # Transition matrix M
     # rank vector (initially 1/n)
     # update: v' = Mv
