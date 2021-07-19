@@ -1,4 +1,16 @@
 
-betweenness_sampled05.pkl
+btw_sampled05.pkl
 ----------------------------------------------------------
 
+company: fourth
+company: 1.0
+	1 elements of 6495 , the 0.00 percentage
+government: third
+government: 0.7142857142857143
+	5 elements of 6880 , the 0.00 percentage
+politician: first
+politician: 0.23664297179545976
+	2064 elements of 5768 , the 0.36 percentage
+tvshow: second
+tvshow: 0.14285714285714285
+	1 elements of 3327 , the 0.00 percentage

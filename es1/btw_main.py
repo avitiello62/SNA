@@ -84,11 +84,11 @@ if __name__ == '__main__':
     #G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
     label=['first','second','third','fourth']
-    f = open("demofile7.txt", "w")
+    f = open("demofile10.txt", "w")
     
     for i in range(1):
         pq=PriorityQueue()
-        name="betweenness_sampled05"+".pkl"
+        name="spectral_sampled08"+".pkl"
         four_means_clusters=load_dict_from_file(name)
         f.write("\n"+name+"\n")
         f.write("----------------------------------------------------------\n\n")
@@ -130,3 +130,13 @@ if __name__ == '__main__':
             f.write("\t{} elements of {} , the {:.2f} percentage".format(intersection,len(real_clusters[key]),perc))
             f.write("\n")
     f.close()
+    '''
+    name="spectral_sampled_08"+".pkl"
+    four_means_clusters=load_dict_from_file(name)
+    real_fucking_cluster={}
+    label=['first','second','third','fourth']
+    for i in range(4):
+        real_fucking_cluster[label[i]]=four_means_clusters[i]
+    save_dict_on_file(real_fucking_cluster,'spectral_sampled08.pkl')
+    print(real_fucking_cluster)
+    '''

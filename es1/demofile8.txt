@@ -1,0 +1,16 @@
+
+btw_sampled07.pkl
+----------------------------------------------------------
+
+company: second
+company: 1.0
+	15 elements of 6495 , the 0.00 percentage
+government: fourth
+government: 1.0
+	9 elements of 6880 , the 0.00 percentage
+politician: first
+politician: 0.27050053248136313
+	3302 elements of 5768 , the 0.57 percentage
+tvshow: third
+tvshow: 1.0
+	1 elements of 3327 , the 0.00 percentage
