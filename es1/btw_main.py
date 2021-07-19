@@ -84,7 +84,7 @@ if __name__ == '__main__':
     #G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
     label=['first','second','third','fourth']
-    f = open("demofile10.txt", "w")
+    f = open("results/demofile10.txt", "w")
     
     for i in range(1):
         pq=PriorityQueue()

@@ -125,7 +125,7 @@ if __name__ == '__main__':
     end = time.time()
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
-    save_dict_on_file(clusters,'hierarchical_opt9.pkl')
+    save_dict_on_file(clusters, 'results/hierarchical_opt9.pkl')
     print("FINAL TIME: ", end-start)
     
     '''

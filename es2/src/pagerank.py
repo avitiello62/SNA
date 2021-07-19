@@ -65,6 +65,6 @@ if __name__ == '__main__':
 
     G = load_graph(csv_file="../../musae_facebook_edges.csv")
 
-    node_rank = pagerank(G)
+    node_rank = pagerank_naive(G)
 
     # print(node_rank) #chiave = nodo valore = rank
