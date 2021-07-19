@@ -1,0 +1,108 @@
+Logistic Regressor trained on coefficient with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.6879931972789116 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.5325170068027211 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.41285714285714287 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.339421768707483 Is Truthful?: True
+Logistic Regressor trained on max with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.6967687074829932 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.5295238095238095 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.41054421768707483 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.3373469387755102 Is Truthful?: True
+Logistic Regressor trained on average with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.6892517006802721 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.5250340136054422 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.4133673469387755 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.33687074829931973 Is Truthful?: True
+Logistic Regressor trained on random with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.23346938775510204 Is Truthful?: False
+        max Dataset with 100 samples
+        Accuracy: 0.2646258503401361 Is Truthful?: False
+        average Dataset with 100 samples
+        Accuracy: 0.27996598639455783 Is Truthful?: False
+        random Dataset with 100 samples
+        Accuracy: 0.33183673469387753 Is Truthful?: False
+Logistic Regressor IC trained on coefficient with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.4008503401360544 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.407312925170068 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.397108843537415 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.3332312925170068 Is Truthful?: True
+Logistic Regressor IC trained on max with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.4029251700680272 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.4039795918367347 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.39758503401360545 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.33095238095238094 Is Truthful?: True
+Logistic Regressor IC trained on average with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.39200680272108845 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.4061224489795918 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.39105442176870747 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.3329591836734694 Is Truthful?: True
+Logistic Regressor IC trained on random with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.2755442176870748 Is Truthful?: False
+        max Dataset with 100 samples
+        Accuracy: 0.29921768707482993 Is Truthful?: False
+        average Dataset with 100 samples
+        Accuracy: 0.2895578231292517 Is Truthful?: False
+        random Dataset with 100 samples
+        Accuracy: 0.33156462585034013 Is Truthful?: False
+Linear Regressor trained on coefficient with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.6842176870748299 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.5353061224489796 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.4139455782312925 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.33846938775510205 Is Truthful?: True
+Linear Regressor trained on max with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.6385034013605442 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.5105442176870748 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.416156462585034 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.3387074829931973 Is Truthful?: True
+Linear Regressor trained on average with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.5698639455782313 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.48023809523809524 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.413265306122449 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.33741496598639453 Is Truthful?: True
+Linear Regressor trained on random with 1000 samples
+        coefficient Dataset with 100 samples
+        Accuracy: 0.5486054421768708 Is Truthful?: True
+        max Dataset with 100 samples
+        Accuracy: 0.4574149659863946 Is Truthful?: True
+        average Dataset with 100 samples
+        Accuracy: 0.4145578231292517 Is Truthful?: True
+        random Dataset with 100 samples
+        Accuracy: 0.33639455782312927 Is Truthful?: True
