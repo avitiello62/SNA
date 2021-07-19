@@ -2,15 +2,29 @@ import time
 from es2.src.closeness import *
 from es2.src.hits import *
 from es2.src.pagerank import *
-from utils.lesson2 import *
 from utils.priorityq import *
 from es2.src.vect_pagerank import *
+from es1.src.betweenness import betweenness
+from es1.src.betweenness import betweenness_parallel
 from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
 
 
 def top_new(G, measure, k):
     pq = PriorityQueue()
     cen = measure(G)
+    print(cen)
+    for u in G.nodes():
+        pq.add(u, -cen[u])
+        # We use negative value because PriorityQueue returns first values whose priority value is lower
+    out = []
+    for i in range(k):
+        out.append(pq.pop())
+    return out
+
+
+def top_new_for_betweenness(G, measure, k):
+    pq = PriorityQueue()
+    _, cen = measure(G)
     print(cen)
     for u in G.nodes():
         pq.add(u, -cen[u])
@@ -119,7 +133,7 @@ if __name__ == '__main__':
     save_list_on_file(top_500_list, 'degree_naive.csv')
     print("TIME: ", stop-start)'''
 
-    print("Hits Naive")
+    '''print("Hits Naive")
     start = time.time()
     top_500_list = top_new(G, hits, top_number)
     stop = time.time()
@@ -128,7 +142,7 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'hits_naive.csv')
-    print("TIME: ", stop - start)
+    print("TIME: ", stop - start)'''
 
     '''print("Hits Vectorized")
     start = time.time()
@@ -139,4 +153,26 @@ if __name__ == '__main__':
         # print("Position {}: node = {}".format(i, k))
         i += 1
     save_list_on_file(top_500_list, 'hits_vectorized.csv')
+    print("TIME: ", stop - start)'''
+
+    print("Betweenness Naive")
+    start = time.time()
+    top_500_list = top_new_for_betweenness(G, betweenness, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'betweenness_naive.csv')
+    print("TIME: ", stop - start)
+
+    '''print("Betweenness Parallel")
+    start = time.time()
+    top_500_list = top_new_for_betweenness(G, betweenness_parallel, top_number)
+    stop = time.time()
+    i = 1
+    for k in top_500_list:
+        # print("Position {}: node = {}".format(i, k))
+        i += 1
+    save_list_on_file(top_500_list, 'betweenness_parallel.csv')
     print("TIME: ", stop - start)'''
