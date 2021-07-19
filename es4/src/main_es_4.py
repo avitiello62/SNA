@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
 import sys
+#LOCAL IMPORT
 sys.path.append('../../')
 from es3.src.main_es_3 import isTruthful
 
@@ -153,63 +154,34 @@ def totally_random_dataset(number_of_iterations):
     return restaurant_features, restaurant_stars
 
 
-def logistic_regression(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+def logistic_regression_train(restaurant_features, restaurant_stars):
     """
-
     :param restaurant_features:
     :param restaurant_stars:
-    :param restaurant_features_test:
-    :param restaurant_stars_test:
     :return:
     """
     log_reg = LogisticRegression()
     log_reg.fit(restaurant_features, restaurant_stars)
-    results = {}
-    for food in range(0, 6):
-        for service in range(-1, 6):
-            for value in range(-1, 6):
-                key = (food, service, value)
-                results[key] = log_reg.predict([key])
-    accuracy = 0
-    for i in range(len(restaurant_features_test)):
-        if log_reg.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
-            accuracy += 1
-
-    return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
+    return log_reg
 
 
-def linear_regressor(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+
+def linear_regressor_train(restaurant_features, restaurant_stars):
     """
-
     :param restaurant_features:
     :param restaurant_stars:
-    :param restaurant_features_test:
-    :param restaurant_stars_test:
     :return:
     """
     lin_reg = LinearRegression(positive=True)
     lin_reg.fit(restaurant_features, restaurant_stars)
-    results = {}
-    for food in range(0, 6):
-        for service in range(-1, 6):
-            for value in range(-1, 6):
-                key = (food, service, value)
-                results[key] = np.round(lin_reg.predict([key]))
-    accuracy = 0
-    for i in range(len(restaurant_features_test)):
-        if np.round(lin_reg.predict([restaurant_features_test[i]])) == restaurant_stars_test[i]:
-            accuracy += 1
-
-    return isTruthful(results), accuracy / (len(restaurant_stars_test))
+    return lin_reg
+    
 
 
-def ic_logisticreg(restaurant_features, restaurant_stars, restaurant_features_test, restaurant_stars_test):
+def logistic_regressor_ic_train(restaurant_features, restaurant_stars):
     """
-
     :param restaurant_features:
     :param restaurant_stars:
-    :param restaurant_features_test:
-    :param restaurant_stars_test:
     :return:
     """
     log_reg = LogisticRegression()
@@ -224,149 +196,90 @@ def ic_logisticreg(restaurant_features, restaurant_stars, restaurant_features_te
         for j in range(3):
             if log_reg.coef_[i][j] < 0:
                 log_reg.coef_[i][j] = 0
+    return log_reg
+    
 
+def logistic_classifier_test(classifier,restaurant_features_test, restaurant_stars_test):
     results = {}
     for food in range(0, 6):
         for service in range(-1, 6):
             for value in range(-1, 6):
                 key = (food, service, value)
-                results[key] = log_reg.predict([key])
+                results[key] = classifier.predict([key])
     accuracy = 0
     for i in range(len(restaurant_features_test)):
-        if log_reg.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
+        if classifier.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
             accuracy += 1
+    accuracy=accuracy/len(restaurant_stars_test)
+    is_truthful=isTruthful(results)
+    return is_truthful, accuracy
 
-    return (isTruthful(results)), accuracy / (len(restaurant_stars_test))
+def linear_classifier_test(classifier,restaurant_features_test, restaurant_stars_test):
+    results = {}
+    for food in range(0, 6):
+        for service in range(-1, 6):
+            for value in range(-1, 6):
+                key = (food, service, value)
+                results[key] = np.round(classifier.predict([key]))
+    accuracy = 0
+    for i in range(len(restaurant_features_test)):
+        if np.round(classifier.predict([restaurant_features_test[i]])) == restaurant_stars_test[i]:
+            accuracy += 1
+    accuracy=accuracy/len(restaurant_stars_test)
+    is_truthful=isTruthful(results)
+    
+    return is_truthful, accuracy
 
+def complete_set_creation(dim):
+    dataset={}
+    dataset['coefficient']=coefficient_based_dataset(dim)
+    dataset['max']=max_based_dataset(dim)
+    dataset['average']=average_based_dataset(dim)
+    dataset['random']=totally_random_dataset(dim)
+    return dataset
 
-def func():
-    th_log1 = 0
-    acc_log1 = 0
-    th_ic1 = 0
-    acc_ic1 = 0
-    th_lin1 = 0
-    acc_lin1 = 0
+def performance_evaluation():
+    
 
-    th_log2 = 0
-    acc_log2 = 0
-    th_ic2 = 0
-    acc_ic2 = 0
-    th_lin2 = 0
-    acc_lin2 = 0
+    
+    dim_training_set=10000
+    dim_test_set=1000
+    training_sets=complete_set_creation(dim_training_set)
+    test_sets=complete_set_creation(dim_test_set)
+    label=['coefficient','max','average','random']
+    result={}
+    
 
-    th_log3 = 0
-    acc_log3 = 0
-    th_ic3 = 0
-    acc_ic3 = 0
-    th_lin3 = 0
-    acc_lin3 = 0
+    for tr_key in label:
+        result[tr_key]={}
+        classifier='Logistic Regressor'
+        log_reg_trained=logistic_regression_train(training_sets[tr_key][0],training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        for test_key in label:
+            result[tr_key][test_key]=logistic_classifier_test(log_reg_trained,test_sets[test_key][0],test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
+    
 
-    th_log4 = 0
-    acc_log4 = 0
-    th_ic4 = 0
-    acc_ic4 = 0
-    th_lin4 = 0
-    acc_lin4 = 0
-
-    dim_test = 1
-
-    X, Y = coefficient_based_dataset(10000)
-    for i in range(dim_test):
-        Xtest, Ytest = coefficient_based_dataset(1000)
-        th, acc = logistic_regression(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_log1 += 1
-        acc_log1 += acc
-
-        th, acc = ic_logisticreg(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_ic1 += 1
-
-        acc_ic1 += acc
-        th, acc = linear_regressor(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_lin1 += 1
-        acc_lin1 += acc
-        print("---------------------")
-
-        Xtest, Ytest = max_based_dataset(1000)
-
-        th, acc = logistic_regression(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_log2 += 1
-        acc_log2 += acc
-
-        th, acc = ic_logisticreg(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_ic2 += 1
-        acc_ic2 += acc
-        th, acc = linear_regressor(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_lin2 += 1
-        acc_lin2 += acc
-        print("---------------------")
-
-        Xtest, Ytest = average_based_dataset(1000)
-        th, acc = logistic_regression(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_log3 += 1
-        acc_log3 += acc
-
-        th, acc = ic_logisticreg(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_ic3 += 1
-
-        acc_ic3 += acc
-        th, acc = linear_regressor(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_lin3 += 1
-        acc_lin3 += acc
-        print("---------------------")
-
-        Xtest, Ytest = totally_random_dataset(1000)
-        th, acc = logistic_regression(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_log4 += 1
-        acc_log4 += acc
-
-        th, acc = ic_logisticreg(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_ic4 += 1
-        acc_ic4 += acc
-        th, acc = linear_regressor(X, Y, Xtest, Ytest)
-        print(th, acc)
-        if th is True:
-            th_lin4 += 1
-        acc_lin4 += acc
-        print("---------------------")
-
-    print(th_log1 / dim_test, acc_log1 / dim_test)
-    print(th_ic1 / dim_test, acc_ic1 / dim_test)
-    print(th_lin1 / dim_test, acc_lin1 / dim_test)
-
-    print(th_log2 / dim_test, acc_log2 / dim_test)
-    print(th_ic2 / dim_test, acc_ic2 / dim_test)
-    print(th_lin2 / dim_test, acc_lin2 / dim_test)
-
-    print(th_log3 / dim_test, acc_log3 / dim_test)
-    print(th_ic3 / dim_test, acc_ic3 / dim_test)
-    print(th_lin3 / dim_test, acc_lin3 / dim_test)
-
-    print(th_log4 / dim_test, acc_log4 / dim_test)
-    print(th_ic4 / dim_test, acc_ic4 / dim_test)
-    print(th_lin4 / dim_test, acc_lin4 / dim_test)
-
-
+    
+    for tr_key in label:
+        result[tr_key]={}
+        classifier='Logistic Regressor IC'
+        log_reg_ic_trained=logistic_regressor_ic_train(training_sets[tr_key][0],training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        for test_key in label:
+            result[tr_key][test_key]=logistic_classifier_test(log_reg_ic_trained,test_sets[test_key][0],test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
+    for tr_key in label:
+        result[tr_key]={}
+        classifier='Linear Regressor'
+        lin_reg_trained=linear_regressor_train(training_sets[tr_key][0],training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        for test_key in label:
+            result[tr_key][test_key]=linear_classifier_test(lin_reg_trained,test_sets[test_key][0],test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
+        
 if __name__ == '__main__':
-    func()
+    performance_evaluation()

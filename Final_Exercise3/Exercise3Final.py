@@ -82,7 +82,7 @@ def get_best_seeds_version_average(graph, candidates_orientation, candidate, see
         average=get_average_orientation(graph,node,pref)
         average_diff=abs(average-candidates_orientation[candidate])
         if average_diff>0.50:
-            coeff=1
+            coeff=0.5
         else:
             coeff=2
         coefficient[node]=closeness[node]*coeff
