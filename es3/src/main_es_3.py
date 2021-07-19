@@ -5,7 +5,7 @@ import time
 
 def max_based_dataset(number_of_iterations):
     """
-    This function creates a dataset assigning for each restaurant a number of star considering the max value among its
+    This function creates a dataset assigning for each restaurant a number of stars considering the max value among its
     food, service and value with respect to a random probability
     :param number_of_iterations:
     :return: dataset
@@ -52,7 +52,7 @@ def max_based_dataset(number_of_iterations):
 
 def average_based_dataset(number_of_iterations):
     """
-    This function creates a dataset assigning for each restaurant a number of star considering the average value among
+    This function creates a dataset assigning for each restaurant a number of stars considering the average value among
     its food, service and value with respect to a random probability
     :param number_of_iterations:
     :return: dataset
@@ -176,9 +176,12 @@ def mincut_algorithm(probability_dict):
         if k3s not in probability_dict:
             probability_dict[k3s] = 0
 
+        # If the a priori probability of the tuple[food, service, value] of getting to star is higher than the
+        # probability of the same tuple getting three stars, the MinCut is computed using the first probability
         if probability_dict[k2s] > probability_dict[k3s]:
             probability_cut_2s = probability_dict[k2s]
             probability_cut_3s = 1 - probability_dict[k2s]
+        # Otherwise the MinCut is computed using the three star probability
         else:
             probability_cut_2s = 1 - probability_dict[k3s]
             probability_cut_3s = probability_dict[k3s]
@@ -248,22 +251,38 @@ def isTruthful(result):
 
 
 if __name__ == '__main__':
-    number_of_iterations = 1000
-    datasets = [max_based_dataset(number_of_iterations),
-                average_based_dataset(number_of_iterations),
-                totally_random_dataset(number_of_iterations)]
+    iterations = 100
+    timer = []
+    for i in range(iterations):
+        number_of_iterations = 10000
+        datasets = [max_based_dataset(number_of_iterations),
+                    average_based_dataset(number_of_iterations),
+                    totally_random_dataset(number_of_iterations)]
+        time1 = time.time()
+        mincut_dataset_1 = mincut_algorithm(probability_computation(datasets[0]))
 
-    time1 = time.time()
-    mincut_dataset_1 = mincut_algorithm(probability_computation(datasets[0]))
+        time2 = time.time()
+        mincut_dataset_2 = mincut_algorithm(probability_computation(datasets[1]))
 
-    time2 = time.time()
-    mincut_dataset_2 = mincut_algorithm(probability_computation(datasets[1]))
+        time3 = time.time()
+        mincut_dataset_3 = mincut_algorithm(probability_computation(datasets[2]))
 
-    time3 = time.time()
-    mincut_dataset_3 = mincut_algorithm(probability_computation(datasets[2]))
+        time4 = time.time()
 
-    time4 = time.time()
+        first_time = time2 - time1
+        second_time = time3 - time2
+        third_time = time4 - time3
+        print("__________________________________________________")
+        print(isTruthful(mincut_dataset_1), first_time)
+        print(isTruthful(mincut_dataset_2), second_time)
+        print(isTruthful(mincut_dataset_3), third_time)
+        print("\n")
 
-    print(isTruthful(mincut_dataset_1), time2 - time1)
-    print(isTruthful(mincut_dataset_1), time3 - time2)
-    print(isTruthful(mincut_dataset_1), time4 - time3)
+        average_time = (first_time + second_time + third_time) / 3
+        timer.append(average_time)
+
+    average = 0
+    for x in timer:
+        average += x
+    average = average / len(timer)
+    print("AVERAGE MINCUT TIME: ", average)

@@ -10,7 +10,7 @@ from es3.src.main_es_3 import isTruthful
 
 def coefficient_based_dataset(number_of_iterations):
     """
-    This function creates a dataset assigning for each restaurant a number of star considering the weighted average of
+    This function creates a dataset assigning for each restaurant a number of stars considering the weighted average of
     food, service and value with respect to the assignment of three random coefficients. To avoid the discrimination for
     missing features, if a restaurant is lack of a feature the algorithm assigns a random value
     :param number_of_iterations:
@@ -52,7 +52,7 @@ def coefficient_based_dataset(number_of_iterations):
 
 def max_based_dataset(number_of_iterations):
     """
-    This function creates a dataset assigning for each restaurant a number of star considering the max value among its
+    This function creates a dataset assigning for each restaurant a number of stars considering the max value among its
     food, service and value with respect to a random probability
     :param number_of_iterations:
     :return: restaurant_features,restaurant_stars
@@ -101,7 +101,7 @@ def max_based_dataset(number_of_iterations):
 
 def average_based_dataset(number_of_iterations):
     """
-    This function creates a dataset assigning for each restaurant a number of star considering the average value among
+    This function creates a dataset assigning for each restaurant a number of stars considering the average value among
     its food, service and value with respect to a random probability
     :param number_of_iterations:
     :return: restaurant_features,restaurant_stars
