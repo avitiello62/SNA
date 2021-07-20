@@ -2,6 +2,7 @@ from src.betweenness import *
 from src.four_means import *
 from src.hierarchical import *
 from src.spectral import *
+from utils.lesson1 import hierarchical
 import networkx as nx
 from tqdm import tqdm
 import pandas as pd
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     
     G=load_dataset("../facebook_large/musae_facebook_edges.csv")
     
-    for i in range (1):
+    '''for i in range (1):
         #print("4 Means OPT")#1.5s non si deve testare
         start=time.time()
         clusters=btw_clustering_parallel(G,8)
@@ -96,6 +97,7 @@ if __name__ == '__main__':
         #for k in clusters:
         #    print("Cluster {} : {}".format(k,clusters[k]) )
     #save_dict_on_file(clusters,'four_means_opt.pkl')
+    '''
     '''
     
     print("4 Means")#infinito 1 volta                   Mario
@@ -119,14 +121,14 @@ if __name__ == '__main__':
     save_dict_on_file(clusters,'spectral.pkl')
     '''
     
-    print('Hierarchical OPT ')#2/10 min /10 volte    luigi
+    '''print('Hierarchical OPT ')#2/10 min /10 volte    luigi
     start = time.time()
     clusters=hierarchical_clustering_opt(G,4)
     end = time.time()
     for k in clusters:
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters, 'results/hierarchical_opt9.pkl')
-    print("FINAL TIME: ", end-start)
+    print("FINAL TIME: ", end-start)'''
     
     '''
     print('BTW Parallel ')#40min    5/10 volte     alberto
@@ -142,3 +144,12 @@ if __name__ == '__main__':
         print("Cluster {} : {}".format(k,clusters[k]) )
     save_dict_on_file(clusters,'btw.pkl')
     '''
+
+    print('Hierarchical ')  # 2/10 min /10 volte    luigi
+    start = time.time()
+    clusters = (G, 4)
+    end = time.time()
+    for k in clusters:
+        print("Cluster {} : {}".format(k, clusters[k]))
+    save_dict_on_file(clusters, 'results/hierarchical_opt9.pkl')
+    print("FINAL TIME: ", end - start)

@@ -135,26 +135,6 @@ def average_based_dataset(number_of_iterations):
     return restaurant_features, restaurant_stars
 
 
-def totally_random_dataset(number_of_iterations):
-    """
-    This function creates a random dataset.
-    :param number_of_iterations:
-    :return: restaurant_features,restaurant_stars
-    """
-    restaurant_features = []
-    restaurant_stars = []
-
-    for i in range(0, number_of_iterations):
-        for food in range(0, 6):
-            for service in range(-1, 6):
-                for value in range(-1, 6):
-                    star = random.randint(1, 3)
-                    restaurant_features.append(tuple([food, service, value]))
-                    restaurant_stars.append(star)
-
-    return restaurant_features, restaurant_stars
-
-
 def logistic_regression_train(restaurant_features, restaurant_stars):
     """
     :param restaurant_features:
@@ -236,7 +216,6 @@ def complete_set_creation(dim):
     dataset['coefficient'] = coefficient_based_dataset(dim)
     dataset['max'] = max_based_dataset(dim)
     dataset['average'] = average_based_dataset(dim)
-    dataset['random'] = totally_random_dataset(dim)
     return dataset
 
 
@@ -245,7 +224,7 @@ def performance_evaluation():
     dim_test_set = 1000
     training_sets = complete_set_creation(dim_training_set)
     test_sets = complete_set_creation(dim_test_set)
-    label = ['coefficient', 'max', 'average', 'random']
+    label = ['coefficient', 'max', 'average']
     result = {}
 
     for tr_key in label:
