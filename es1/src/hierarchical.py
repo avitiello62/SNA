@@ -1,4 +1,40 @@
 import random
+from utils.priorityq import PriorityQueue
+
+def hierarchical(G):
+    # Create a priority queue with each pair of nodes indexed by distance
+    pq = PriorityQueue()
+    for u in G.nodes():
+        for v in G.nodes():
+            if u != v:
+                if (u, v) in G.edges() or (v, u) in G.edges():
+                    pq.add(frozenset([frozenset(u), frozenset(v)]), 0)
+                else:
+                    pq.add(frozenset([frozenset(u), frozenset(v)]), 1)
+
+    # Start with a cluster for each node
+    clusters = set(frozenset(u) for u in G.nodes())
+
+    done = False
+    while not done:
+        # Merge closest clusters
+        s = list(pq.pop())
+        clusters.remove(s[0])
+        clusters.remove(s[1])
+
+        # Update the distance of other clusters from the merged cluster
+        for w in clusters:
+            e1 = pq.remove(frozenset([s[0], w]))
+            e2 = pq.remove(frozenset([s[1], w]))
+            if e1 == 0 or e2 == 0:
+                pq.add(frozenset([s[0] | s[1], w]), 0)
+            else:
+                pq.add(frozenset([s[0] | s[1], w]), 1)
+
+        clusters.add(s[0] | s[1])
+
+        if len(clusters)==4:
+            done = True
 
 
 def hierarchical_clustering_opt(G, num_clusters=4):
