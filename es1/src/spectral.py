@@ -44,7 +44,7 @@ def parallel_spectral_two_clustering(G,nodes,n,j):
     #we split the eigen vectors check among the different jobs
     with Parallel(n_jobs=j) as parallel:    
         result=parallel(delayed(compute_eigen)(np.array(a),b) for a,b in double_chunks(v,nodes, math.ceil(n/j)))
-    #now it is necessary to aggregate  the result
+    #now it is necessary to aggregate  the results
     for res in result:
         cluster1|=res[0]
         cluster2|=res[1]

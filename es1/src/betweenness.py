@@ -1,13 +1,13 @@
 import networkx as nx
 import math
-from tqdm import tqdm
 import itertools as it
 from joblib import Parallel, delayed
 import time
 import sys
-import matplotlib.pyplot as plt
 
-sys.path.append('../')
+
+#local import (running the python command in the src folder)
+sys.path.append('../../')
 from utils.priorityq import PriorityQueue
 
 
@@ -57,62 +57,58 @@ def betweenness(G):
 
     return edge_btw, node_btw
 
-
-# The algorithm is quite time-consuming. Indeed, its computational complexity is O(nm).
-# Possible optimizations: parallelization, considering only a sample of starting nodes
-
-# Clusters are computed by iteratively removing edges of largest betweenness
-def btw_clustering(G):
+def betwenness_clustering(G):
+    # saving starting time of the algorithm
     start = time.time()
+    #compute the betweenness for each edge
     eb, nb = betweenness(G)
+    #insert the edge in a priorityq (sorted by highest betweenness)
     pq = PriorityQueue()
     for i in eb.keys():
         pq.add(i, -eb[i])
     graph = G.copy()
+    # at each iteration we remove the highest betweenness edge
     # we can stop the algorithm when there are only 4 cluster (connected component in the graph)
     cc = []
     while len(cc) != 4:
         edge = tuple(sorted(pq.pop()))
         graph.remove_edges_from([edge])
         cc = list(nx.connected_components(graph))
+    
     end = time.time()
-    print("Time Exec:", end - start)
+    # algorithm execution time
+    print("Execution time:", end-start)
+    # we format the output into a dict
     label = ['first', 'second', 'third', 'fourth']
     final_cluster = {}
-
     for i in range(4):
         final_cluster[label[i]] = cc[i]
-
     return final_cluster
-
 
 def chunks(data, size):
     idata = iter(data)
     for i in range(0, len(data), size):
         yield {k: data[k] for k in it.islice(idata, size)}
 
-
 def betweenness_parallel(G, j=8):
     edge_btw = {frozenset(e): 0 for e in G.edges()}
     node_btw = {i: 0 for i in G.nodes()}
+    #we split the betweenness computation among different jobs
     with Parallel(n_jobs=j) as parallel:
-        # Run in parallel diameter function on each processor by passing to each processor only the subset of nodes on which it works
         result = parallel(delayed(compute_btw)(G, X) for X in chunks(G.nodes(), math.ceil(len(G.nodes()) / j)))
+    #now it is necessary to aggregate  the results
     for key in edge_btw.keys():
         for res in result:
             edge_btw[key] += res[0][key]
-
     for key in node_btw.keys():
         for res in result:
             node_btw[key] += res[1][key]
-
     return edge_btw, node_btw
-
 
 def compute_btw(G, nodes):
     edge_btw = {frozenset(e): 0 for e in G.edges()}
     node_btw = {i: 0 for i in G.nodes()}
-    for s in tqdm(nodes):
+    for s in nodes:
         # Compute the number of shortest paths from s to every other node
         tree = []  # it lists the nodes in the order in which they are visited
         spnum = {i: 0 for i in G.nodes()}  # it saves the number of shortest paths from s to i
@@ -153,29 +149,30 @@ def compute_btw(G, nodes):
                     c]  # betweenness of a vertex is the sum over all s of the number of shortest paths from s to other nodes using that vertex
     return edge_btw, node_btw
 
-
-def btw_clustering_parallel(G, j=1):
+def betwenness_clustering_parallel(G, j=1):
+    # saving starting time of the algorithm
     start = time.time()
-    eb, nb = betweenness_parallel(G, j)
+    #compute the betweenness for each edge
+    eb, nb = betweenness_parallel(G,j)
+    #insert the edge in a priorityq (sorted by highest betweenness)
     pq = PriorityQueue()
-
     for i in eb.keys():
         pq.add(i, -eb[i])
-
     graph = G.copy()
+    # at each iteration we remove the highest betweenness edge
     # we can stop the algorithm when there are only 4 cluster (connected component in the graph)
     cc = []
     while len(cc) != 4:
         edge = tuple(sorted(pq.pop()))
-
         graph.remove_edges_from([edge])
         cc = list(nx.connected_components(graph))
-
+    
+    end = time.time()
+    # algorithm execution time
+    print("Execution time:", end-start)
+    # we format the output into a dict
     label = ['first', 'second', 'third', 'fourth']
     final_cluster = {}
-
     for i in range(4):
         final_cluster[label[i]] = cc[i]
-    end = time.time()
-    print("Time Exec:", end - start)
     return final_cluster
