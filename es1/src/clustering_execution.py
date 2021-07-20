@@ -1,10 +1,3 @@
-import networkx as nx
-from networkx.algorithms.centrality.betweenness import betweenness_centrality
-from tqdm import tqdm
-import pandas as pd
-import numpy as np
-import pickle
-import time
 import sys
 
 #local import (running the python command in the src folder)
