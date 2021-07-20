@@ -35,10 +35,8 @@ def hierarchical(G):
 
         clusters.add(s[0] | s[1])
 
-        print(clusters)
-        a = input("Do you want to continue? (y/n) ")
-        if a == "n":
-            done = True
+        if len(clusters)==4:
+            done=True
 
 
 def two_means(G):
