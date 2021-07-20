@@ -2,20 +2,16 @@ import random
 
 
 def hierarchical_clustering_opt(G, num_clusters=4):
-    #1. Instanziare dizionario dove la chiave è la label del nodo e il valore l'indice del cluster
+    #1. instantiate a dictionary where the key is the node’s label and the value the index of cluster the node belongs to
     cluster_belongs = {}
-    #2. Instanziare un dict dove la chiave è un insieme di nodi (frozenset e i valori sono i vicini)
+    #2. Instantiate a dict where the key is a set of nodes(frozenset) and the value will be the neighbours
     clusters = {}
 
-    #1 Riempire clusters con tutti i nodi del grafo
+    #1 Fill cluster with all nodes of network
     for n in G.nodes():
         clusters[frozenset([n])]=[k for k in G.neighbors(n) if not k==n] #delete self loops with the condition
         cluster_belongs[n] = frozenset([n])
 
-    #print("Starting: ", clusters)
-    #print("cluster belongs: ", cluster_belongs)
-    #iteration
-    condition=False
     i=0
     while len(clusters)>num_clusters:
         static_clusters = clusters.copy()
@@ -24,14 +20,12 @@ def hierarchical_clustering_opt(G, num_clusters=4):
         for w in static_clusters:
             if w in visited:
                 continue
-        
 
-            #w = random.choice([k for k in clusters])
-            #voglio unire w al cluster di uno dei suoi vicini
-            #prendo un vicino random di w
+            #I want to merge w to one of the neighbours' cluster
+            #take a random neighbour of w
             w_neighbors = clusters[w]
             w_neighbor = random.choice(w_neighbors)
-            #Vedo il neighbor in che cluster si trova
+            #Pick up neighbour's cluster
             neighbor_cluster = cluster_belongs[w_neighbor]
             #get neighbors of neighbor
             k_neighbors = clusters[neighbor_cluster]
@@ -54,7 +48,7 @@ def hierarchical_clustering_opt(G, num_clusters=4):
             clusters[new_frozen_set] = new_neighbors
 
             #update clusters in which there is w
-            for n in w: #per ogni elemento nel frozenset w
+            for n in w: #for each element in the frozenset w
                 cluster_belongs[n] = new_frozen_set
 
             for k in neighbor_cluster:
@@ -62,9 +56,6 @@ def hierarchical_clustering_opt(G, num_clusters=4):
             
             if len(clusters)==num_clusters:
                 break
-            #print("cluster: ", clusters)
-            #print("cluster belong: ", cluster_belongs)
-            #yn = input("Do you want to continue?")
             i+=1
     label=['first','second','third','fourth']
     final_cluster={}
