@@ -120,6 +120,8 @@ def performance_analisys():
     closeness_parallel = read_list_from_csv("../es2/results/parallel_closeness.csv")
     # Betweenness
     print("Reading Betweenness Results")
+    betweenness_naive = read_list_from_csv("../es2/results/betweenness_naive.csv")
+    betweenness_parallel = read_list_from_csv("../es2/results/betweenness_parallel.csv")
     # Pagerank
     print("Reading Pagerank Results")
     pagerank_naive = read_list_from_csv("../es2/results/pagerank_naive.csv")
@@ -144,7 +146,8 @@ def performance_analisys():
     # Degree
     degree_naive = set(degree_naive)
     # Betweenness
-
+    betweenness_naive = set(betweenness_naive)
+    betweenness_parallel = set(betweenness_parallel)
     # Same Algorithm Comparations
     print("____________________________________________________________________________________________________")
     print("SAME ALGORITHM COMPARATIONS")
@@ -168,11 +171,17 @@ def performance_analisys():
           "\tsimilarity rate: {}\n"
           "\tequality rate: {}\n".format(closeness_naive_vs_parallel_similarity, closeness_naive_vs_parallel_equality))
     # Betweenness vs Betweenness
+    betweenness_naive_vs_parallel_similarity = len(
+        betweenness_naive.intersection(betweenness_parallel)) / normalization_factor
+    betweenness_naive_vs_parallel_equality = len(
+        positional_comparation(betweenness_naive, betweenness_parallel)) / normalization_factor
     print("____________________________________________________________________________________________________")
     print("BETWEENNESS IMPLEMENTATIONS")
     print("____________________________________________________________________________________________________")
-    print(
-        "\nno betweenness results\n")
+    print("naive vs parallel\n"
+          "\tsimilarity rate: {}\n"
+          "\tequality rate: {}\n".format(
+        betweenness_naive_vs_parallel_similarity, betweenness_naive_vs_parallel_equality))
     # Pagerank vs Pagerank
     pagerank_naive_vs_vectorized_similarity = len(
         pagerank_naive.intersection(pagerank_vectorized)) / normalization_factor

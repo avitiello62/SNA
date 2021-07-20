@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
 import sys
-#LOCAL IMPORT
+
+# LOCAL IMPORT
 sys.path.append('../../')
 from es3.src.main_es_3 import isTruthful
 
@@ -158,31 +159,29 @@ def logistic_regression_train(restaurant_features, restaurant_stars):
     """
     :param restaurant_features:
     :param restaurant_stars:
-    :return:
+    :return: trained logistic regressor
     """
     log_reg = LogisticRegression()
     log_reg.fit(restaurant_features, restaurant_stars)
     return log_reg
 
 
-
 def linear_regressor_train(restaurant_features, restaurant_stars):
     """
     :param restaurant_features:
     :param restaurant_stars:
-    :return:
+    :return: trained linear regressor
     """
     lin_reg = LinearRegression(positive=True)
     lin_reg.fit(restaurant_features, restaurant_stars)
     return lin_reg
-    
 
 
 def logistic_regressor_ic_train(restaurant_features, restaurant_stars):
     """
     :param restaurant_features:
     :param restaurant_stars:
-    :return:
+    :return: trained logistic regresso ic
     """
     log_reg = LogisticRegression()
     log_reg.fit(restaurant_features, restaurant_stars)
@@ -197,9 +196,9 @@ def logistic_regressor_ic_train(restaurant_features, restaurant_stars):
             if log_reg.coef_[i][j] < 0:
                 log_reg.coef_[i][j] = 0
     return log_reg
-    
 
-def logistic_classifier_test(classifier,restaurant_features_test, restaurant_stars_test):
+
+def logistic_classifier_test(classifier, restaurant_features_test, restaurant_stars_test):
     results = {}
     for food in range(0, 6):
         for service in range(-1, 6):
@@ -210,11 +209,12 @@ def logistic_classifier_test(classifier,restaurant_features_test, restaurant_sta
     for i in range(len(restaurant_features_test)):
         if classifier.predict([restaurant_features_test[i]]) == restaurant_stars_test[i]:
             accuracy += 1
-    accuracy=accuracy/len(restaurant_stars_test)
-    is_truthful=isTruthful(results)
+    accuracy = accuracy / len(restaurant_stars_test)
+    is_truthful = isTruthful(results)
     return is_truthful, accuracy
 
-def linear_classifier_test(classifier,restaurant_features_test, restaurant_stars_test):
+
+def linear_classifier_test(classifier, restaurant_features_test, restaurant_stars_test):
     results = {}
     for food in range(0, 6):
         for service in range(-1, 6):
@@ -225,61 +225,62 @@ def linear_classifier_test(classifier,restaurant_features_test, restaurant_stars
     for i in range(len(restaurant_features_test)):
         if np.round(classifier.predict([restaurant_features_test[i]])) == restaurant_stars_test[i]:
             accuracy += 1
-    accuracy=accuracy/len(restaurant_stars_test)
-    is_truthful=isTruthful(results)
-    
+    accuracy = accuracy / len(restaurant_stars_test)
+    is_truthful = isTruthful(results)
+
     return is_truthful, accuracy
 
+
 def complete_set_creation(dim):
-    dataset={}
-    dataset['coefficient']=coefficient_based_dataset(dim)
-    dataset['max']=max_based_dataset(dim)
-    dataset['average']=average_based_dataset(dim)
-    dataset['random']=totally_random_dataset(dim)
+    dataset = {}
+    dataset['coefficient'] = coefficient_based_dataset(dim)
+    dataset['max'] = max_based_dataset(dim)
+    dataset['average'] = average_based_dataset(dim)
+    dataset['random'] = totally_random_dataset(dim)
     return dataset
 
+
 def performance_evaluation():
-    
-
-    
-    dim_training_set=10000
-    dim_test_set=1000
-    training_sets=complete_set_creation(dim_training_set)
-    test_sets=complete_set_creation(dim_test_set)
-    label=['coefficient','max','average','random']
-    result={}
-    
+    dim_training_set = 10000
+    dim_test_set = 1000
+    training_sets = complete_set_creation(dim_training_set)
+    test_sets = complete_set_creation(dim_test_set)
+    label = ['coefficient', 'max', 'average', 'random']
+    result = {}
 
     for tr_key in label:
-        result[tr_key]={}
-        classifier='Logistic Regressor'
-        log_reg_trained=logistic_regression_train(training_sets[tr_key][0],training_sets[tr_key][1])
-        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        result[tr_key] = {}
+        classifier = 'Logistic Regressor'
+        log_reg_trained = logistic_regression_train(training_sets[tr_key][0], training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier, tr_key, dim_training_set))
         for test_key in label:
-            result[tr_key][test_key]=logistic_classifier_test(log_reg_trained,test_sets[test_key][0],test_sets[test_key][1])
-            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
-            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
-    
+            result[tr_key][test_key] = logistic_classifier_test(log_reg_trained, test_sets[test_key][0],
+                                                                test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key, dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format(result[tr_key][test_key][1], result[tr_key][test_key][0]))
 
-    
     for tr_key in label:
-        result[tr_key]={}
-        classifier='Logistic Regressor IC'
-        log_reg_ic_trained=logistic_regressor_ic_train(training_sets[tr_key][0],training_sets[tr_key][1])
-        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        result[tr_key] = {}
+        classifier = 'Logistic Regressor IC'
+        log_reg_ic_trained = logistic_regressor_ic_train(training_sets[tr_key][0], training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier, tr_key, dim_training_set))
         for test_key in label:
-            result[tr_key][test_key]=logistic_classifier_test(log_reg_ic_trained,test_sets[test_key][0],test_sets[test_key][1])
-            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
-            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
+            result[tr_key][test_key] = logistic_classifier_test(log_reg_ic_trained, test_sets[test_key][0],
+                                                                test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key, dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format(result[tr_key][test_key][1], result[tr_key][test_key][0]))
+
     for tr_key in label:
-        result[tr_key]={}
-        classifier='Linear Regressor'
-        lin_reg_trained=linear_regressor_train(training_sets[tr_key][0],training_sets[tr_key][1])
-        print("{} trained on {} with {} samples".format(classifier,tr_key,dim_training_set))
+        result[tr_key] = {}
+        classifier = 'Linear Regressor'
+        lin_reg_trained = linear_regressor_train(training_sets[tr_key][0], training_sets[tr_key][1])
+        print("{} trained on {} with {} samples".format(classifier, tr_key, dim_training_set))
         for test_key in label:
-            result[tr_key][test_key]=linear_classifier_test(lin_reg_trained,test_sets[test_key][0],test_sets[test_key][1])
-            print("\t{} Dataset with {} samples".format(test_key,dim_test_set))
-            print("\tAccuracy: {} Is Truthful?: {}".format( result[tr_key][test_key][1], result[tr_key][test_key][0]))
-        
+            result[tr_key][test_key] = linear_classifier_test(lin_reg_trained, test_sets[test_key][0],
+                                                              test_sets[test_key][1])
+            print("\t{} Dataset with {} samples".format(test_key, dim_test_set))
+            print("\tAccuracy: {} Is Truthful?: {}".format(result[tr_key][test_key][1], result[tr_key][test_key][0]))
+
+
 if __name__ == '__main__':
     performance_evaluation()

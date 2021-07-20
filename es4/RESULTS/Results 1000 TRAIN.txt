@@ -9,7 +9,7 @@ Logistic Regressor trained on coefficient with 1000 samples
         Accuracy: 0.339421768707483 Is Truthful?: True
 Logistic Regressor trained on max with 1000 samples
         coefficient Dataset with 100 samples
-        Accuracy: 0.6967687074829932 Is Truthful?: True
+        Accuracy: 0.7017619047619048 Is Truthful?: True
         max Dataset with 100 samples
         Accuracy: 0.5295238095238095 Is Truthful?: True
         average Dataset with 100 samples
