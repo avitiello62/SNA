@@ -113,15 +113,14 @@ def spectral_clustering_parallel(G,j):
     clusters.append(result2[1])
     
     end=time.time()
-    print("tempo esec:",end-start)
-    
-    
+    # algorithm execution time
+    print("Execution time:", end-start)
+    # we format the output into a dict
     final_cluster={}
     final_cluster['first']=clusters[0]
     final_cluster['second']=clusters[1]
     final_cluster['third']=clusters[2]
     final_cluster['fourth']=clusters[3]
-    
         
     return final_cluster
 
