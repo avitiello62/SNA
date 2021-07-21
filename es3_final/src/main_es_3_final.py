@@ -12,6 +12,23 @@ from es1_final.src.shapley import shapley_closeness, f_dist, shapley_closeness_u
 
 
 def votes_counter(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_manipulation, favourite_candidate):
+    """
+        This function takes in input the candidate and the preferences of the candidates in three different moments:
+            -beginning
+            -after fj dynamics
+            -after fj dynamics and manipulation
+        calculates the votes obtained by the candidates in these three different moments and returns all the counters
+        and the votes improvement
+        :param initial_preferences:
+        :param after_fj_dynamics:
+        :param after_fj_dynamics_and_manipulation:
+        :param favourite_candidate:
+        :param initial_preferences:
+        :return: initial_preferences_counter
+        :return: after_fj_dynamics_counter
+        :return: after_fj_dynamics_and_manipulation_counter
+        :return: voter_improvement
+        """
     initial_preferences_counter = 0
     after_fj_dynamics_counter = 0
     after_fj_dynamics_and_manipulation_counter = 0
@@ -33,6 +50,13 @@ def votes_counter(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_
 
 
 def plurality_voting(candidates_orientation, nodes_preferences):
+    """
+        This function takes in input the candidates orientation and the preferences of the nodes in the graphs and
+        calculates what is the vote of each node
+        :param candidates_orientation:
+        :param nodes_preferences:
+        :return: preferences
+            """
     preferences = {}
     for voter_index, voter in enumerate(nodes_preferences):
         min_dist = np.inf
@@ -64,8 +88,15 @@ def plurality_voting(candidates_orientation, nodes_preferences):
 
 
 def seeds_choice(seed_number, closeness, already_voting_nodes):
+    """
+        This function takes in input the number of seeds, the closeness of the graph and the nodes that already vote for
+        the selected candidate and calculates what are the nodes chosen for manipulation
+        :param seed_number:
+        :param closeness:
+        :param already_voting_nodes:
+        :return: seeds
+            """
     seeds = []
-
     while len(seeds) < seed_number and len(closeness) > 0:
         seed = max(closeness, key=closeness.get)
         if seed not in already_voting_nodes:
@@ -75,6 +106,13 @@ def seeds_choice(seed_number, closeness, already_voting_nodes):
 
 
 def get_already_voting(preferences, candidate):
+    """
+        This function takes in input the of the nodes in the graph and the selected candidate and calculates what are the
+        nodes that already vote for him/her
+        :param preferences:
+        :param candidate
+        :return: already_voting
+            """
     already_voting = []
     for node in preferences:
         pref = preferences[node]
@@ -84,6 +122,12 @@ def get_already_voting(preferences, candidate):
 
 
 def get_candidate_intervals(candidates_prob):
+    """
+        This function takes in input an array containing the probabilities related to candidates and calculates voting
+        intervals
+        :param candidates_prob:
+        :return: intervals
+            """
     sorted_candidates = sorted(candidates_prob, key=float)
     intervals = []
 
@@ -108,18 +152,53 @@ def get_candidate_intervals(candidates_prob):
 
 
 def get_interval(intervals, candidate):
+    """
+        This function takes in input an array containing the intervals and the selected candidates and returns the
+        voting interval.
+        intervals
+        :param intervals:
+        :param candidate
+        :return: interval
+            """
     for interval in intervals:
         if interval[0] < candidate <= interval[1]:
             return interval
     return intervals[0]
 
 
-def get_average_orientation(G, node, pref):
-    total = 0.0
-    for neighbor in G[node]:
-        total += pref[str(neighbor)]
-    total /= len(G[node])
-    return total
+def get_average_orientation(graph, node, preferences):
+    """
+        This function takes in input the graph, a node and the preferences array and calculates the average orientation
+        of the node's neighborhood.
+        voting interval.
+        intervals
+        :param graph:
+        :param node:
+        :param preferences:
+        :return: orientation
+            """
+    orientation = 0.0
+    for neighbor in graph[node]:
+        orientation += preferences[str(neighbor)]
+    orientation /= len(graph[node])
+    return orientation
+
+
+def candidates_generation(candidates_number):
+    """
+        This function takes in input the number of candidates to be generated and generates random values for each one
+        in a set of uniform intervals
+        :param candidates_number:
+        :return: candidates_prob
+            """
+    candidates_prob = []
+    first_value = 0
+    second_value = 1 / candidates_number
+    for i in range(candidates_number):
+        candidates_prob.append(random.uniform(first_value, second_value))
+        first_value = second_value
+        second_value = second_value + 1 / candidates_number
+    return candidates_prob
 
 
 def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
@@ -150,11 +229,47 @@ def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_pr
             average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
 
             if average_neighborhood_orientation < cur_interval[0]:
-                manipulation_factor = cur_interval[1]
+                manipulation_factor = cur_interval[1] - 0.001
             elif average_neighborhood_orientation > cur_interval[1]:
                 manipulation_factor = cur_interval[0] + 0.001
             else:
                 manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+    return initial_preferences, after_fj_dynamics, after, amath
+
+
+def manipulation_dummy(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    clos = shapley_closeness_unweighted_graph(graph, f_dist)
+    seeds = seeds_choice(seed_number, clos, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            manipulation_factor = candidates_orientation[candidate]
             pref[str(index)] = manipulation_factor
         else:
             stub[str(index)] = 0.5
@@ -207,22 +322,11 @@ def manipulation_with_hard_influence(graph, candidates_orientation, candidate, s
     return initial_preferences, after_fj_dynamics, after, amath
 
 
-def candidates_generation(candidates_number):
-    candidates_prob = []
-    first_value = 0
-    second_value = 1 / candidates_number
-    for i in range(candidates_number):
-        candidates_prob.append(random.uniform(first_value, second_value))
-        first_value = second_value
-        second_value = second_value + 1 / candidates_number
-    return candidates_prob
-
-
 if __name__ == '__main__':
     numNodes = 250
     density = 0.3
     random_graph = get_random_graph(numNodes, math.ceil((numNodes * (numNodes - 1)) * 0.5 * density), False)
-    candidates_number = random.randint(2, 5)
+    candidates_number = 5
     candidates_prob = candidates_generation(candidates_number)
 
     nodes_pref = []
@@ -261,6 +365,21 @@ if __name__ == '__main__':
             votes[num] = [prev_cnt, middle_cnt, after_cnt]
         result2[i] = votes
 
+    result3 = {}
+    for i in tqdm(range(len(candidates_prob))):
+        candidate = i
+        votes = {}
+        for num in num_of_nodes:
+            (prev, middle, after, amath) = manipulation_dummy(random_graph, candidates_prob,
+                                                              candidate,
+                                                              num, nodes_pref)
+            prev_cnt, middle_cnt, after_cnt, increment = amath
+            # print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
+            # print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
+            # print("------------------------------------------------------------------------------------------------\n")
+            votes[num] = [prev_cnt, middle_cnt, after_cnt]
+        result3[i] = votes
+
     tab = {}
 
     tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
@@ -270,7 +389,7 @@ if __name__ == '__main__':
             tab[str(i)].append(result1[i][j][2])
     df = pd.DataFrame(data=tab)
     print(df.head())
-    df.to_csv("results/dict4.csv")
+    df.to_csv("results/manipulation.csv")
 
     tab = {}
 
@@ -281,4 +400,15 @@ if __name__ == '__main__':
             tab[str(i)].append(result2[i][j][2])
     df = pd.DataFrame(data=tab)
     print(df.head())
-    df.to_csv("results/dict5.csv")
+    df.to_csv("results/manipulation_with_hard_influence.csv")
+
+    tab = {}
+
+    tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
+    for i in range(len(candidates_prob)):
+        tab[str(i)] = [result3[i][10][1]]
+        for j in range(10, 55, 5):
+            tab[str(i)].append(result3[i][j][2])
+    df = pd.DataFrame(data=tab)
+    print(df.head())
+    df.to_csv("results/manipulation_dummy.csv")
