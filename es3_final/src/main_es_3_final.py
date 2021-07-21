@@ -285,10 +285,6 @@ def manipulation_dummy(graph, candidates_orientation, candidate, seed_number, no
     seeds = seeds_choice(seed_number, clos, already_voting_nodes)
 
     stub = {}
-
-    intervals = get_candidate_intervals(candidates_orientation)
-    cur_interval = get_interval(intervals, candidates_orientation[candidate])
-
     for index, node in enumerate(nodes_preferencies):
         if str(index) in seeds:
             stub[str(index)] = 1
@@ -353,10 +349,6 @@ def manipulation_with_hard_influence(graph, candidates_orientation, candidate, s
         else:
             stub[str(index)] = 0.5
 
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
-
     manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manipulation.values()))
     results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
@@ -405,10 +397,6 @@ def manipulation_dummy_with_parallel_betweenness(graph, candidates_orientation, 
             pref[str(index)] = manipulation_factor
         else:
             stub[str(index)] = 0.5
-
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
 
     manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manipulation.values()))
@@ -464,10 +452,6 @@ def manipulation_with_hard_influence_with_parallel_betweenness(graph, candidates
         else:
             stub[str(index)] = 0.5
 
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
-
     manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manipulation.values()))
     results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
@@ -522,10 +506,6 @@ def manipulation_with_parallel_betweenness(graph, candidates_orientation, candid
             pref[str(index)] = manipulation_factor
         else:
             stub[str(index)] = 0.5
-
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
 
     manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manipulation.values()))
