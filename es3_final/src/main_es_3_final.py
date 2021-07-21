@@ -207,12 +207,23 @@ def manipulation_with_hard_influence(graph, candidates_orientation, candidate, s
     return initial_preferences, after_fj_dynamics, after, amath
 
 
+def candidates_generation(candidates_number):
+    candidates_prob = []
+    first_value = 0
+    second_value = 1 / candidates_number
+    for i in range(candidates_number):
+        candidates_prob.append(random.uniform(first_value, second_value))
+        first_value = second_value
+        second_value = second_value + 1 / candidates_number
+    return candidates_prob
+
+
 if __name__ == '__main__':
     numNodes = 250
     density = 0.3
     random_graph = get_random_graph(numNodes, math.ceil((numNodes * (numNodes - 1)) * 0.5 * density), False)
-    candidates_prob = [random.uniform(0, 0.25), random.uniform(0.25, 0.5), random.uniform(0.5, 0.75),
-                       random.uniform(0.75, 1)]
+    candidates_number = random.randint(2, 5)
+    candidates_prob = candidates_generation(candidates_number)
 
     nodes_pref = []
     for _ in range(random_graph.number_of_nodes()):
@@ -224,7 +235,7 @@ if __name__ == '__main__':
     num_of_nodes = [10, 15, 20, 25, 30, 35, 40, 45, 50]
 
     result1 = {}
-    for i in tqdm(range(5)):
+    for i in tqdm(range(len(candidates_prob))):
         candidate = i
         votes = {}
         for num in num_of_nodes:
@@ -237,7 +248,7 @@ if __name__ == '__main__':
         result1[i] = votes
 
     result2 = {}
-    for i in tqdm(range(5)):
+    for i in tqdm(range(len(candidates_prob))):
         candidate = i
         votes = {}
         for num in num_of_nodes:
@@ -259,7 +270,7 @@ if __name__ == '__main__':
             tab[str(i)].append(result1[i][j][2])
     df = pd.DataFrame(data=tab)
     print(df.head())
-    df.to_csv("dict4.csv")
+    df.to_csv("results/dict4.csv")
 
     tab = {}
 
@@ -270,4 +281,4 @@ if __name__ == '__main__':
             tab[str(i)].append(result2[i][j][2])
     df = pd.DataFrame(data=tab)
     print(df.head())
-    df.to_csv("dict5.csv")
+    df.to_csv("results/dict5.csv")

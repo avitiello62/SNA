@@ -2,7 +2,7 @@ import os
 import sys
 
 import networkx as nx
-from es1.src.degree import degree
+from utils.lesson2 import degree
 from utils.priorityq import PriorityQueue
 import numpy as np
 import matplotlib.pyplot as plt

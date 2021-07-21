@@ -1,13 +1,17 @@
 import time
-from es2.src.closeness import *
-from es2.src.hits import *
-from es2.src.pagerank import *
-from utils.priorityq import *
-from es2.src.vect_pagerank import *
+import pandas as pd
+from es2.src.closeness import closeness
+from es2.src.closeness import parallel_closeness
+from es2.src.hits import hits_naive
+from es2.src.hits import hits_vectorized
+from es2.src.pagerank import pagerank_naive
+from utils.priorityq import PriorityQueue
+from utils.es1_utils import load_dataset
+from es2.src.vect_pagerank import vectorized_pagerank
 from es1.src.betweenness import betweenness
 from es1.src.betweenness import betweenness_parallel
-from es1.src.degree import degree
-from networkx.algorithms.link_analysis.pagerank_alg import pagerank, pagerank_numpy
+from utils.lesson2 import degree
+from networkx.algorithms.link_analysis.pagerank_alg import pagerank
 
 
 def top_new(G, measure, k):
@@ -42,31 +46,6 @@ def save_list_on_file(top_500_list, name, column_name="TOP 500"):
 
 
 if __name__ == '__main__':
-    G = nx.Graph()
-    G.add_edge('A', 'B')
-    G.add_edge('A', 'C')
-
-    G.add_edge('A', 'B')
-    G.add_edge('A', 'v')
-    G.add_edge('B', 'C')
-
-    G.add_edge('B', 'D')
-    G.add_edge('D', 'E')
-    G.add_edge('D', 'z')
-
-    G.add_edge('E', 'F')
-    G.add_edge('E', 's')
-    G.add_edge('F', 'G')
-    G.add_edge('F', 'q')
-    G.add_edge('P', 'q')
-    G.add_edge('d', 'q')
-    G.add_edge('F', 'V')
-    G.add_edge('F', 's')
-    G.add_edge('V', '1')
-    G.add_edge('1', '2')
-    G.add_edge('2', '3')
-    G.add_edge('3', '1')
-
     G = load_dataset("../facebook_large/musae_facebook_edges.csv")
 
     top_number = 500
@@ -89,7 +68,7 @@ if __name__ == '__main__':
     for k in top_500_list:
         i += 1
     save_list_on_file(top_500_list, 'pagerank_vectorized.csv')
-    print("TIME: ", stop-start)
+    print("TIME: ", stop - start)
 
     print("Pagerank di Networkx")
     top_500_list = top_new(G, pagerank, top_number)
@@ -106,7 +85,7 @@ if __name__ == '__main__':
     for k in top_500_list:
         i += 1
     save_list_on_file(top_500_list, 'closeness.csv')
-    print("TIME: ", stop-start)
+    print("TIME: ", stop - start)
 
     print("Parallel Closeness")
     start = time.time()
@@ -126,7 +105,7 @@ if __name__ == '__main__':
     for k in top_500_list:
         i += 1
     save_list_on_file(top_500_list, 'degree_naive.csv')
-    print("TIME: ", stop-start)
+    print("TIME: ", stop - start)
 
     print("Hits Naive")
     start = time.time()
