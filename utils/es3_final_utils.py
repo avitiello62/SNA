@@ -6,17 +6,10 @@ def get_random_graph(nodes, edges, connected=True):
 
     if connected:
         remove_small_components(graph)
-
-    # Makes so that the nodes are strings and not ints.
-    # Strings are iterable and can be easily converted into sets
-    # This operation takes a little bit of time, but they do not impact any algorithm
-    # because it happens before the application of any algorithm
-    # This will also speed up the algorithms which require sets and frozensets, so to avoid the
-    # conversion from int to string during the execution of the algorithms
     mapping = {}
     for node in graph.nodes():
         mapping[node] = str(node)
-    nx.relabel_nodes(graph, mapping, False)  # Re-labelling is done in-place
+    nx.relabel_nodes(graph, mapping, False)
     return graph
 
 
