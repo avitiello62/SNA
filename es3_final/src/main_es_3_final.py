@@ -365,10 +365,10 @@ def manipulation_with_hard_influence(graph, candidates_orientation, candidate, s
     return results
 
 
-def manipulation_with_naive_betweenness(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+def manipulation_dummy_with_parallel_betweenness(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
     """
-        This manipulation function uses naive betweenness to choose seeds and tries to shift the average preference of
-        neighbors into the candidate interval without losing seed's vote
+        This manipulation function uses parallel betweenness to choose seeds and simply assigns the candidate orientation
+        to seeds
     :param graph:
     :param candidates_orientation:
     :param candidate:
@@ -389,7 +389,7 @@ def manipulation_with_naive_betweenness(graph, candidates_orientation, candidate
 
     already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
 
-    _, betw = betweenness(graph)
+    _, betw = betweenness_parallel(graph,8)
     seeds = seeds_choice(seed_number, betw, already_voting_nodes)
 
     stub = {}
@@ -401,13 +401,65 @@ def manipulation_with_naive_betweenness(graph, candidates_orientation, candidate
         if str(index) in seeds:
             stub[str(index)] = 1
             average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+            manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
 
-            if average_neighborhood_orientation < cur_interval[0]:
-                manipulation_factor = cur_interval[1] - 0.001
-            elif average_neighborhood_orientation > cur_interval[1]:
-                manipulation_factor = cur_interval[0] + 0.001
-            else:
-                manipulation_factor = candidates_orientation[candidate]
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
+
+
+def manipulation_with_hard_influence_with_parallel_betweenness(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses parallel betweenness to choose seeds and forces seed's neighbors to change their
+        orientation by shifting drastically the seed's orientation. This is done to obtain a great number of votes from
+        seed's neighbors but risks to lose seed's vote.
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+        """
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    _, betw = betweenness_parallel(graph,8)
+    seeds = seeds_choice(seed_number, betw, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])
+    cur_interval_average = (cur_interval[0] + cur_interval[1]) / 2
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+            manipulation_factor = 2 * cur_interval_average - average_neighborhood_orientation
+            if manipulation_factor > 1:
+                manipulation_factor = 1
+            if manipulation_factor < 0:
+                manipulation_factor = 0
             pref[str(index)] = manipulation_factor
         else:
             stub[str(index)] = 0.5
@@ -507,6 +559,7 @@ def test_function(manipulation_function, graph, candidates_prob, seed_number, no
 
 
 if __name__ == '__main__':
+    random.seed=11
     # Graph generation
     numNodes = 250
     density = 0.3
@@ -535,10 +588,14 @@ if __name__ == '__main__':
     df_dummy = test_function(manipulation_dummy, graph, candidates_prob, seed_number, nodes_pref)
     df_dummy.to_csv("results/manipulation_dummy.csv")
 
-    df_naive_betw = test_function(manipulation_with_naive_betweenness, graph, candidates_prob, seed_number,
+    df_betw = test_function(manipulation_with_parallel_betweenness, graph, candidates_prob, seed_number,
                                   nodes_pref)
-    df_naive_betw.to_csv("results/manipulation_with_naive_betweenness.csv")
+    df_betw.to_csv("results/manipulation_with_parallel_betweenness.csv")
 
-    df_parallel_betw = test_function(manipulation_with_parallel_betweenness, graph, candidates_prob, seed_number,
+    df_dummy_betw = test_function(manipulation_dummy_with_parallel_betweenness, graph, candidates_prob, seed_number,
                                      nodes_pref)
-    df_parallel_betw.to_csv("results/manipulation_with_parallel_betweenness.csv")
+    df_dummy_betw.to_csv("results/manipulation_dummy_with_parallel_betweenness.csv")
+
+    df_hard_influence_betw = test_function(manipulation_with_hard_influence_with_parallel_betweenness, graph, candidates_prob, seed_number,
+                                     nodes_pref)
+    df_hard_influence_betw.to_csv("results/manipulation_with_hard_influence_with_parallel_betweenness.csv")
