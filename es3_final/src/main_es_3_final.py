@@ -8,7 +8,10 @@ import pandas as pd
 sys.path.append("../../")
 from utils.utils import get_random_graph
 from es1_final.src.fj_dynamics import FJ_dynamics
-from es1_final.src.shapley import shapley_closeness, f_dist, shapley_closeness_unweighted_graph
+from es1_final.src.shapley import f_dist, shapley_closeness_unweighted_graph
+from es1.src.betweenness import betweenness, betweenness_parallel
+
+GROUP_NUMBER = 6
 
 
 def votes_counter(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_manipulation, favourite_candidate):
@@ -43,10 +46,8 @@ def votes_counter(initial_preferences, after_fj_dynamics, after_fj_dynamics_and_
         if pref == favourite_candidate:
             after_fj_dynamics_and_manipulation_counter += 1
 
-    votes_improvement = after_fj_dynamics_and_manipulation_counter - initial_preferences_counter
-
-    return initial_preferences_counter, after_fj_dynamics_counter, after_fj_dynamics_and_manipulation_counter, \
-           votes_improvement
+    preferences = [initial_preferences_counter, after_fj_dynamics_counter, after_fj_dynamics_and_manipulation_counter]
+    return preferences
 
 
 def plurality_voting(candidates_orientation, nodes_preferences):
@@ -87,21 +88,21 @@ def plurality_voting(candidates_orientation, nodes_preferences):
     return preferences
 
 
-def seeds_choice(seed_number, closeness, already_voting_nodes):
+def seeds_choice(seed_number, centrality_measure, already_voting_nodes):
     """
         This function takes in input the number of seeds, the closeness of the graph and the nodes that already vote for
         the selected candidate and calculates what are the nodes chosen for manipulation
         :param seed_number:
-        :param closeness:
+        :param centrality_measure:
         :param already_voting_nodes:
         :return: seeds
             """
     seeds = []
-    while len(seeds) < seed_number and len(closeness) > 0:
-        seed = max(closeness, key=closeness.get)
+    while len(seeds) < seed_number and len(centrality_measure) > 0:
+        seed = max(centrality_measure, key=centrality_measure.get)
         if seed not in already_voting_nodes:
             seeds.append(seed)
-            closeness.pop(seed)
+            centrality_measure.pop(seed)
     return seeds
 
 
@@ -202,6 +203,16 @@ def candidates_generation(candidates_number):
 
 
 def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses shapley closeness to choose seeds and tries to shift the average preference of
+        neighbors into the candidate interval without losing seed's vote
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+    """
     initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
     pref = {}
     stub = {}
@@ -238,13 +249,25 @@ def manipulation(graph, candidates_orientation, candidate, seed_number, nodes_pr
         else:
             stub[str(index)] = 0.5
 
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
-    return initial_preferences, after_fj_dynamics, after, amath
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
 
 
 def manipulation_dummy(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses shapley closeness to choose seeds and simply assigns the candidate orientation
+        to seeds
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+    """
     initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
     pref = {}
     stub = {}
@@ -274,13 +297,27 @@ def manipulation_dummy(graph, candidates_orientation, candidate, seed_number, no
         else:
             stub[str(index)] = 0.5
 
-    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
-    after = plurality_voting(candidates_orientation, list(manip.values()))
-    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
-    return initial_preferences, after_fj_dynamics, after, amath
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
 
 
 def manipulation_with_hard_influence(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses shapley closeness to choose seeds and forces seed's neighbors to change their
+        orientation by shifting drastically the seed's orientation. This is done to obtain a great number of votes from
+        seed's neighbors but risks to lose seed's vote.
+        to seeds
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+        """
     initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
     pref = {}
     stub = {}
@@ -319,96 +356,189 @@ def manipulation_with_hard_influence(graph, candidates_orientation, candidate, s
     manip = FJ_dynamics(graph, pref, stub, num_iter=200)
     after = plurality_voting(candidates_orientation, list(manip.values()))
     amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
-    return initial_preferences, after_fj_dynamics, after, amath
+
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
+
+
+def manipulation_with_naive_betweenness(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses naive betweenness to choose seeds and tries to shift the average preference of
+        neighbors into the candidate interval without losing seed's vote
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+        """
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    _, betw = betweenness(graph)
+    seeds = seeds_choice(seed_number, betw, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+
+            if average_neighborhood_orientation < cur_interval[0]:
+                manipulation_factor = cur_interval[1] - 0.001
+            elif average_neighborhood_orientation > cur_interval[1]:
+                manipulation_factor = cur_interval[0] + 0.001
+            else:
+                manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
+
+
+def manipulation_with_parallel_betweenness(graph, candidates_orientation, candidate, seed_number, nodes_preferencies):
+    """
+        This manipulation function uses parallel betweenness to choose seeds and tries to shift the average preference of
+        neighbors into the candidate interval without losing seed's vote
+    :param graph:
+    :param candidates_orientation:
+    :param candidate:
+    :param seed_number:
+    :param nodes_preferencies:
+    :return: candidates_prob
+        """
+    initial_preferences = plurality_voting(candidates_orientation, nodes_preferencies)
+    pref = {}
+    stub = {}
+
+    for index, preference in enumerate(nodes_preferencies):
+        stub[str(index)] = 0.5
+        pref[str(index)] = preference
+
+    fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
+    after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
+
+    already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
+
+    _, betw = betweenness_parallel(graph)
+    seeds = seeds_choice(seed_number, betw, already_voting_nodes)
+
+    stub = {}
+
+    intervals = get_candidate_intervals(candidates_orientation)
+    cur_interval = get_interval(intervals, candidates_orientation[candidate])
+
+    for index, node in enumerate(nodes_preferencies):
+        if str(index) in seeds:
+            stub[str(index)] = 1
+            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
+
+            if average_neighborhood_orientation < cur_interval[0]:
+                manipulation_factor = cur_interval[1] - 0.001
+            elif average_neighborhood_orientation > cur_interval[1]:
+                manipulation_factor = cur_interval[0] + 0.001
+            else:
+                manipulation_factor = candidates_orientation[candidate]
+            pref[str(index)] = manipulation_factor
+        else:
+            stub[str(index)] = 0.5
+
+    manip = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manip.values()))
+    amath = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    manipulation = FJ_dynamics(graph, pref, stub, num_iter=200)
+    after = plurality_voting(candidates_orientation, list(manipulation.values()))
+    results = votes_counter(initial_preferences, after_fj_dynamics, after, candidate)
+
+    print(GROUP_NUMBER, results[0], results[2])
+    return results
+
+
+def test_function(manipulation_function, graph, candidates_prob, seed_number, nodes_preferences):
+    result = {}
+    for i in tqdm(range(len(candidates_prob))):
+        candidate = i
+        votes = {}
+        for num in seed_number:
+            manipulation = manipulation_function(graph, candidates_prob, candidate, num, nodes_preferences)
+            votes[num] = manipulation
+        result[i] = votes
+
+    tab = {}
+
+    tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
+    for i in range(len(candidates_prob)):
+        tab[str(i)] = [result[i][10][1]]
+        for j in range(10, 55, 5):
+            tab[str(i)].append(result[i][j][2])
+    df = pd.DataFrame(data=tab)
+    print(df.head())
+
+    return df
 
 
 if __name__ == '__main__':
+    # Graph generation
     numNodes = 250
     density = 0.3
-    random_graph = get_random_graph(numNodes, math.ceil((numNodes * (numNodes - 1)) * 0.5 * density), False)
+    graph = get_random_graph(numNodes, math.ceil((numNodes * (numNodes - 1)) * 0.5 * density), False)
+
+    # Candidates generation
     candidates_number = 5
     candidates_prob = candidates_generation(candidates_number)
 
+    # Preferences generation
     nodes_pref = []
-    for _ in range(random_graph.number_of_nodes()):
+    for _ in range(graph.number_of_nodes()):
         nodes_pref.append(random.uniform(0, 1))
 
-    increments = {}
-    max_increment_num_nodes = 0
-    max_increment = 0
-    num_of_nodes = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+    # Seed
+    seed_number = [10, 15, 20, 25, 30, 35, 40, 45, 50]
 
-    result1 = {}
-    for i in tqdm(range(len(candidates_prob))):
-        candidate = i
-        votes = {}
-        for num in num_of_nodes:
-            (prev, middle, after, amath) = manipulation(random_graph, candidates_prob, candidate, num, nodes_pref)
-            prev_cnt, middle_cnt, after_cnt, increment = amath
-            # print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
-            # print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
-            # print("------------------------------------------------------------------------------------------------\n")
-            votes[num] = [prev_cnt, middle_cnt, after_cnt]
-        result1[i] = votes
+    # Test for each manipulation function with the seed_number array
+    df_manipulation = test_function(manipulation, graph, candidates_prob, seed_number, nodes_pref)
+    df_manipulation.to_csv("results/manipulation.csv")
 
-    result2 = {}
-    for i in tqdm(range(len(candidates_prob))):
-        candidate = i
-        votes = {}
-        for num in num_of_nodes:
-            (prev, middle, after, amath) = manipulation_with_hard_influence(random_graph, candidates_prob, candidate,
-                                                                            num, nodes_pref)
-            prev_cnt, middle_cnt, after_cnt, increment = amath
-            # print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
-            # print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
-            # print("------------------------------------------------------------------------------------------------\n")
-            votes[num] = [prev_cnt, middle_cnt, after_cnt]
-        result2[i] = votes
+    df_hard_influence = test_function(manipulation_with_hard_influence, graph, candidates_prob, seed_number,
+                                      nodes_pref)
+    df_hard_influence.to_csv("results/manipulation_with_hard_influence.csv")
 
-    result3 = {}
-    for i in tqdm(range(len(candidates_prob))):
-        candidate = i
-        votes = {}
-        for num in num_of_nodes:
-            (prev, middle, after, amath) = manipulation_dummy(random_graph, candidates_prob,
-                                                              candidate,
-                                                              num, nodes_pref)
-            prev_cnt, middle_cnt, after_cnt, increment = amath
-            # print("Previously voting: ", prev_cnt, "\t\tWith Dynamics: ", middle_cnt, "\t\tNow voting: ", after_cnt)
-            # print("Increment without seeds: " + str(increment - num) + "\t\tTotal Increment: " + str(increment))
-            # print("------------------------------------------------------------------------------------------------\n")
-            votes[num] = [prev_cnt, middle_cnt, after_cnt]
-        result3[i] = votes
+    df_dummy = test_function(manipulation_dummy, graph, candidates_prob, seed_number, nodes_pref)
+    df_dummy.to_csv("results/manipulation_dummy.csv")
 
-    tab = {}
+    df_naive_betw = test_function(manipulation_with_naive_betweenness, graph, candidates_prob, seed_number,
+                                  nodes_pref)
+    df_naive_betw.to_csv("results/manipulation_with_naive_betweenness.csv")
 
-    tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
-    for i in range(len(candidates_prob)):
-        tab[str(i)] = [result1[i][10][1]]
-        for j in range(10, 55, 5):
-            tab[str(i)].append(result1[i][j][2])
-    df = pd.DataFrame(data=tab)
-    print(df.head())
-    df.to_csv("results/manipulation.csv")
-
-    tab = {}
-
-    tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
-    for i in range(len(candidates_prob)):
-        tab[str(i)] = [result2[i][10][1]]
-        for j in range(10, 55, 5):
-            tab[str(i)].append(result2[i][j][2])
-    df = pd.DataFrame(data=tab)
-    print(df.head())
-    df.to_csv("results/manipulation_with_hard_influence.csv")
-
-    tab = {}
-
-    tab['*'] = ['start', '10', '15', '20', '25', '30', '35', '40', '45', '50']
-    for i in range(len(candidates_prob)):
-        tab[str(i)] = [result3[i][10][1]]
-        for j in range(10, 55, 5):
-            tab[str(i)].append(result3[i][j][2])
-    df = pd.DataFrame(data=tab)
-    print(df.head())
-    df.to_csv("results/manipulation_dummy.csv")
+    df_parallel_betw = test_function(manipulation_with_parallel_betweenness, graph, candidates_prob, seed_number,
+                                     nodes_pref)
+    df_parallel_betw.to_csv("results/manipulation_with_parallel_betweenness.csv")
