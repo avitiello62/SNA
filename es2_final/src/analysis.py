@@ -77,7 +77,7 @@ log_scatterplot_degree_distribution(G)
 
 
 
-experiments = {
+'''experiments = {
     1: {"n":10000, "r":1, "k":6, "q":1, "n_trials":10},
     2: {"n":10000, "r":1, "k":7, "q":1, "n_trials":10},
     3: {"n":10000, "r":1, "k":7, "q":2, "n_trials":10},
@@ -105,5 +105,12 @@ for key in experiments.keys():
         print("The provided graph has %d nodes and %d edges" % (G.number_of_nodes(), G.number_of_edges()))
         name = "exp{}_trial{}_n{}_r{}_k{}_q{}".format(str(key),str(i),str(n),str(r).replace(".",","),str(k).replace(".",","),str(q).replace(".",","))
         print("Name: ", name)
-        save_scatterplot_degree_distribution(G, name)
+        save_scatterplot_degree_distribution(G, name)'''
 
+n = 10000
+r = 1.5
+k = 8
+q = 2
+
+G = GenWS2DG(n, r, k, q)
+scatterplot_degree_distribution(G)
