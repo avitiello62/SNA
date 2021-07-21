@@ -378,21 +378,15 @@ def manipulation_dummy_with_parallel_betweenness(graph, candidates_orientation, 
 
     fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
     after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
-
     already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
 
     _, betw = betweenness_parallel(graph,8)
     seeds = seeds_choice(seed_number, betw, already_voting_nodes)
 
     stub = {}
-
-    intervals = get_candidate_intervals(candidates_orientation)
-    cur_interval = get_interval(intervals, candidates_orientation[candidate])
-
     for index, node in enumerate(nodes_preferencies):
         if str(index) in seeds:
             stub[str(index)] = 1
-            average_neighborhood_orientation = get_average_orientation(graph, str(index), pref)
             manipulation_factor = candidates_orientation[candidate]
             pref[str(index)] = manipulation_factor
         else:
@@ -425,17 +419,13 @@ def manipulation_with_hard_influence_with_parallel_betweenness(graph, candidates
     for index, preference in enumerate(nodes_preferencies):
         stub[str(index)] = 0.5
         pref[str(index)] = preference
-
     fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
     after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
-
     already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
-
     _, betw = betweenness_parallel(graph,8)
     seeds = seeds_choice(seed_number, betw, already_voting_nodes)
 
     stub = {}
-
     intervals = get_candidate_intervals(candidates_orientation)
     cur_interval = get_interval(intervals, candidates_orientation[candidate])
     cur_interval_average = (cur_interval[0] + cur_interval[1]) / 2
@@ -478,17 +468,14 @@ def manipulation_with_parallel_betweenness(graph, candidates_orientation, candid
     for index, preference in enumerate(nodes_preferencies):
         stub[str(index)] = 0.5
         pref[str(index)] = preference
-
     fj_dynamics_output = FJ_dynamics(graph, pref.copy(), stub, num_iter=200)
     after_fj_dynamics = plurality_voting(candidates_orientation, list(fj_dynamics_output.values()))
-
     already_voting_nodes = get_already_voting(after_fj_dynamics, candidate)
 
     _, betw = betweenness_parallel(graph)
     seeds = seeds_choice(seed_number, betw, already_voting_nodes)
 
     stub = {}
-
     intervals = get_candidate_intervals(candidates_orientation)
     cur_interval = get_interval(intervals, candidates_orientation[candidate])
 
