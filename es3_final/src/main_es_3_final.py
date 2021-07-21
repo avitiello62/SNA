@@ -6,7 +6,7 @@ from tqdm import tqdm
 import pandas as pd
 
 sys.path.append("../../")
-from utils.utils import get_random_graph
+from utils.es3_final_utils import get_random_graph
 from es1_final.src.fj_dynamics import FJ_dynamics
 from es1_final.src.shapley import f_dist, shapley_closeness_unweighted_graph
 from es1.src.betweenness import betweenness, betweenness_parallel
